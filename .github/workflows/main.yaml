@@ -33,7 +33,7 @@ jobs:
         nix-shell shell.nix --run 'make README.html'
         mkdir doc
         mv README.html doc/index.html
-      
+
     - name: Deploy
       uses: JamesIves/github-pages-deploy-action@4.1.0
       with:
