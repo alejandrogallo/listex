@@ -1,0 +1,893 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2021-11-26 Fri 22:53 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LisTeX</title>
+<meta name="author" content="Alejandro Gallo" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+</style>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        displayAlign: "center",
+        displayIndent: "0em",
+
+        "HTML-CSS": { scale: 100,
+                        linebreaks: { automatic: "false" },
+                        webFont: "TeX"
+                       },
+        SVG: {scale: 100,
+              linebreaks: { automatic: "false" },
+              font: "TeX"},
+        NativeMML: {scale: 100},
+        TeX: { equationNumbers: {autoNumber: "AMS"},
+               MultLineWidth: "85%",
+               TagSide: "right",
+               TagIndent: ".8em"
+             }
+});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_HTML"></script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">LisTeX</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org71baa4e">1. Introduction</a>
+<ul>
+<li><a href="#org3d0036b">1.1. <span class="todo TODO">TODO</span> What is to be done</a></li>
+</ul>
+</li>
+<li><a href="#orgf609c98">2. org-src blocks</a></li>
+<li><a href="#org36b3a7b">3. Derived mode</a></li>
+<li><a href="#orgb3d2cfd">4. Main implementation</a></li>
+<li><a href="#orgfd6d95e">5. Misc</a></li>
+<li><a href="#org6b47a00">6. Macros definition</a></li>
+<li><a href="#org238816b">7. Types</a></li>
+<li><a href="#org6cae794">8. Render</a></li>
+<li><a href="#org54fe857">9. Examples</a>
+<ul>
+<li><a href="#org470704c">9.1. Some equations</a>
+<ul>
+<li><a href="#org2bb3a3f">9.1.1. Newton</a></li>
+<li><a href="#org05fb17f">9.1.2. Coupled cluster</a></li>
+</ul>
+</li>
+<li><a href="#org7877b43">9.2. Latex document example</a></li>
+<li><a href="#org11c9b7c">9.3. A matrix macro</a></li>
+<li><a href="#org9e9ffdf">9.4. <span class="todo TODO">TODO</span> Newcmdlet</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org71baa4e" class="outline-2">
+<h2 id="org71baa4e"><span class="section-number-2">1.</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+This packages comes from the ocasional frustration of writing
+latex in <code>org-mode</code> and having a sane default formating
+of the equations. Also it comes from the lack of frustration
+formating and writing s-expressions in Lisp.
+Let's say, it originates in a "frustration transfer".
+</p>
+
+<p>
+This package is written as a literate program cite:knuth.
+If you want to contribute please consider writing in the style of the document.
+</p>
+</div>
+
+<div id="outline-container-org3d0036b" class="outline-3">
+<h3 id="org3d0036b"><span class="section-number-3">1.1.</span> <span class="todo TODO">TODO</span> What is to be done</h3>
+<div class="outline-text-3" id="text-1-1">
+<ul class="org-ul">
+<li>Some real world testing
+<ul class="org-ul">
+<li>to find bugs</li>
+<li>to finalize the DSL, right now I think it's quite
+ergonomic, but it might be wrong.</li>
+</ul></li>
+<li>Maybe a better way to generate macros</li>
+<li>Think about which rules to implement for the latex indentation.</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf609c98" class="outline-2">
+<h2 id="orgf609c98"><span class="section-number-2">2.</span> org-src blocks</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+In org mode we want to have easily accessible code blocks like
+</p>
+
+<div class="org-src-container">
+<pre class="src src-org"><span style="font-weight: bold; font-style: italic;">#+begin_src listex :env al* :label dr-dv</span>
+(let ((d '(-mathrm d)))
+  `(-frac (,d r)
+          (,d v)))
+<span style="font-weight: bold; font-style: italic;">#+end_src</span>
+
+<span style="font-weight: bold; font-style: italic;">#+RESULTS:</span>
+<span style="font-weight: bold;">:results:</span>
+\begin{align*}
+\label{dr-dv} \frac{\mathrm{d} r}{\mathrm{d} v}
+\end{align*}
+<span style="font-weight: bold;">:end:</span>
+</pre>
+</div>
+
+
+<p>
+We have beyond the usual flags, the following:
+</p>
+
+<dl class="org-dl">
+<dt>:label</dt><dd>This is the latex label that should be used included
+in the expression automatically.
+Also a local lisp variable will be created with the same
+name so that one can reuse the expression somewhere else.</dd>
+<dt>:lisp-label</dt><dd>Sometime we want to reuse the expression
+but we do not want a tex label, so <code>:lisp-label</code>
+sets the lisp variable to the expression as in <code>:label</code>
+but then no tex label is necessary.</dd>
+<dt>:env</dt><dd>It is possible to wrap the expression in an environment
+before the expression gets rendered to latex.
+Possible values are for instance <code>$, $$, eq, eq*, al, al*</code>
+etc.</dd>
+</dl>
+
+
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">org-babel-default-header-args:listex</span> '((<span style="font-weight: bold;">:exports</span> . <span style="font-style: italic;">"results"</span>)
+                                               (<span style="font-weight: bold;">:results</span> . <span style="font-style: italic;">"value drawer"</span>)))
+
+(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">org-babel-header-args:listex</span> '((<span style="font-weight: bold;">:label</span> . <span style="font-weight: bold;">:any</span>)
+                                       (<span style="font-weight: bold;">:lisp-label</span> . <span style="font-weight: bold;">:any</span>)
+                                       (<span style="font-weight: bold;">:env</span> . <span style="font-weight: bold;">:any</span>))
+  <span style="font-style: italic;">"listex-specific header arguments."</span>)
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">org-babel-execute:listex</span> (body params)
+  (labels ((maybe-symbol (key) (<span style="font-weight: bold;">let</span> ((maybe-string (cdr (assq key params))))
+                                 (<span style="font-weight: bold;">when</span> maybe-string (intern maybe-string)))))
+    (<span style="font-weight: bold;">let*</span> ((expr (eval (car (read-from-string body))))
+           (env (maybe-symbol <span style="font-weight: bold;">:env</span>))
+           (label (maybe-symbol <span style="font-weight: bold;">:label</span>))
+           (lisp-label (<span style="font-weight: bold;">or</span> (maybe-symbol <span style="font-weight: bold;">:lisp-label</span>)
+                           label)))
+      (<span style="font-weight: bold;">when</span> lisp-label
+        (message <span style="font-style: italic;">"new lisp-label defined: %s"</span> lisp-label)
+        (eval `(<span style="font-weight: bold;">setq-local</span> ,lisp-label ',expr)))
+      (listex
+       (<span style="font-weight: bold;">if</span> env
+           `(,env ,(<span style="font-weight: bold;">if</span> label
+                       `((-label ,label) ,expr)
+                     expr))
+         expr)))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org36b3a7b" class="outline-2">
+<h2 id="org36b3a7b"><span class="section-number-2">3.</span> Derived mode</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+We define a derived mode based on the <code>emacs-lisp</code> mode
+to make it easy to edit the s-expressions with your preferred bindings.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">define-derived-mode</span> <span style="font-weight: bold;">listex-mode</span>
+  emacs-lisp-mode <span style="font-style: italic;">"LiSTeX"</span>
+  <span style="font-style: italic;">"Major mode for listex.</span>
+<span style="font-style: italic;">\\{listex-mode-map}"</span>)
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgb3d2cfd" class="outline-2">
+<h2 id="orgb3d2cfd"><span class="section-number-2">4.</span> Main implementation</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+This package has the following concepts:
+</p>
+
+<dl class="org-dl">
+<dt><a href="#orga634bad">command</a></dt><dd>This should be the equivalent to latex commands, i.e.,
+if <code>cmd</code> is a latex command of 3 variables, then
+elisp:(cmd a b c d e) should be rendered as</dd>
+</dl>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">name</th>
+<th scope="col" class="org-left">prefix</th>
+<th scope="col" class="org-left">what</th>
+<th scope="col" class="org-left">lisp</th>
+<th scope="col" class="org-left">tex</th>
+<th scope="col" class="org-left">Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">command <a id="orga634bad"></a></td>
+<td class="org-left"><code>-</code></td>
+<td class="org-left">Latex commands</td>
+<td class="org-left"><code>(-cmd a b c d)</code></td>
+<td class="org-left"><code>\cmd{a}{b}{c}{d}</code></td>
+<td class="org-left">by prefix</td>
+</tr>
+
+<tr>
+<td class="org-left">keyword <a id="orga0baff5"></a></td>
+<td class="org-left"><code>/</code></td>
+<td class="org-left">Single keywords</td>
+<td class="org-left"><code>(/cmd a b c d)</code></td>
+<td class="org-left"><code>\cmd a b c d</code></td>
+<td class="org-left">by prefix</td>
+</tr>
+
+<tr>
+<td class="org-left">operator <a id="org792308e"></a></td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">Infix inclusion</td>
+<td class="org-left"><code>(+ a b c)</code></td>
+<td class="org-left"><code>a + b + c</code></td>
+<td class="org-left"><code>listex-operator-list</code></td>
+</tr>
+
+<tr>
+<td class="org-left">tex-macro</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">Macro returning a string</td>
+<td class="org-left"><code>(^ a b)</code></td>
+<td class="org-left"><code>a^{b}</code></td>
+<td class="org-left"><code>listex-tex-macro-alias-alist</code></td>
+</tr>
+
+<tr>
+<td class="org-left">atom</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">Convert whatever to string</td>
+<td class="org-left"><code>int</code></td>
+<td class="org-left"><code>int</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">list</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">Join elements by space</td>
+<td class="org-left"><code>(a b)</code></td>
+<td class="org-left"><code>a b</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left">vector</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">Will be copied as is</td>
+<td class="org-left"><code>[a=5, b]</code></td>
+<td class="org-left"><code>[a=5, b]</code></td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-left">lisp-macro (TODO)</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">Macro returning a symbol or list</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left"><code>listex-lisp-macro-alist</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+<div id="outline-container-orgfd6d95e" class="outline-2">
+<h2 id="orgfd6d95e"><span class="section-number-2">5.</span> Misc</h2>
+<div class="outline-text-2" id="text-5">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-keyword-prefix</span> <span style="font-style: italic;">"/"</span>)
+(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-command-prefix</span> <span style="font-style: italic;">"-"</span>)
+
+(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-operator-prefix</span> <span style="font-style: italic;">"%"</span>)
+(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-operator-list</span> '(+ * - =))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">listex:indentation</span> (len)
+  (eval `(concat ,@(<span style="font-weight: bold;">cl-loop</span> for i from 1 to len collect <span style="font-style: italic;">" "</span>))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6b47a00" class="outline-2">
+<h2 id="org6b47a00"><span class="section-number-2">6.</span> Macros definition</h2>
+<div class="outline-text-2" id="text-6">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-tex-macro-alist</span> nil)
+(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-lisp-macro-alist</span> nil)
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">this is for the newcmdlet macro</span>
+(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-tex-macro--alist-user</span> nil)
+
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:addcmd</span> (alist key fmt <span style="font-weight: bold; text-decoration: underline;">&amp;rest</span> !args)
+  `(<span style="font-weight: bold;">setf</span> (alist-get ',key ,alist)
+         ,(<span style="font-weight: bold;">cl-etypecase</span> fmt
+            (<span style="font-weight: bold;">function</span> fmt)
+            (otherwise `(<span style="font-weight: bold;">lambda</span> (args)
+                         ,(<span style="font-weight: bold;">if</span> fmt
+                              `(format ,fmt ,@(<span style="font-weight: bold;">cl-loop</span>
+                                               for a in !args
+                                               collect `(listex:render-tex
+                                                         ,a)))
+                            `(listex:render-tex ,@!args)))))
+         ))
+
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:newcmd</span> (key fmt <span style="font-weight: bold; text-decoration: underline;">&amp;rest</span> !args)
+  `(listex:addcmd listex-tex-macro-alist
+                  ,key ,fmt ,@!args))
+
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">newcmdlet</span> (ncmds <span style="font-weight: bold; text-decoration: underline;">&amp;rest</span> body)
+  `(<span style="font-weight: bold;">let</span> (listex-tex-macro--alist-user)
+     ,@(loop for cmd in ncmds
+             collect
+             `(listex:addcmd listex-tex-macro--alist-user
+                             ,(car cmd) ,(cadr cmd)
+                             ,@(cddr cmd)))
+     ,@body))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">important macros</span>
+(listex:newcmd braced <span style="font-style: italic;">"{%s}"</span> args)
+(listex:newcmd progn <span style="font-style: italic;">"%s"</span> args)
+
+
+
+
+
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">left right stuff</span>
+(listex:newcmd lr <span style="font-style: italic;">"\\left%s%s\\right%s"</span> (car args) (cddr args) (cadr args))
+(listex:newcmd lrp nil `(lr \( \) ,@args))
+(listex:newcmd lrs nil `(lr \[ \] ,@args))
+(listex:newcmd set nil `(lr /{ /} ,@args))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">quantum mechanics</span>
+(listex:newcmd &lt;| nil `(lr /langle | ,@args))
+(listex:newcmd |&gt; nil `(lr | /rangle ,@args))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">exponents</span>
+(listex:newcmd ^ <span style="font-style: italic;">"%s^{%s}"</span> (car args) (cdr args))
+(listex:newcmd _ <span style="font-style: italic;">"%s_{%s}"</span> (car args) (cdr args))
+(listex:newcmd ^_ <span style="font-style: italic;">"%s^{%s}_{%s}"</span> (car args) (cadr args) (caddr args))
+(listex:newcmd _^ <span style="font-style: italic;">"%s_{%s}^{%s}"</span> (car args) (cadr args) (caddr args))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">wrapping</span>
+(listex:newcmd begend <span style="font-style: italic;">"%s%s%s"</span>
+               (car args)
+               (cdr args)
+               (car args))
+(listex:newcmd env <span style="font-style: italic;">"\\begin{%s}\n%s\n\\end{%s}"</span>
+               (car args)
+               (cdr args)
+               (car args))
+(listex:newcmd mat nil `(env pmatrix ,@args))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Math environments</span>
+(listex:newcmd $ nil `(begend $ ,@args))
+(listex:newcmd $$ nil `(begend $$ ,@args))
+(listex:newcmd eq nil `(env equation ,@args))
+(listex:newcmd eq* nil `(env equation* ,@args))
+(listex:newcmd al nil `(env align ,@args))
+(listex:newcmd al* nil `(env align* ,@args))
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">force newlines in the output</span>
+(listex:newcmd terpri <span style="font-style: italic;">"\n"</span>)
+(listex:newcmd br <span style="font-style: italic;">"\n"</span>)
+(listex:newcmd nl <span style="font-style: italic;">"\n"</span>)
+
+<span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">more convoluted example</span>
+(listex:newcmd matrix
+               (<span style="font-weight: bold;">lambda</span> (args)
+                 (<span style="font-weight: bold;">let</span> ((rows (car args))
+                       (cols (cadr args))
+                       (elements (cddr args)))
+                   (<span style="font-weight: bold;">cl-assert</span> (eq (length elements) (* cols rows)))
+                   (listex:render-tex
+                    `(env pmatrix
+                          ,@(<span style="font-weight: bold;">cl-loop</span> for el in elements
+                                     with i = 0
+                                     with buff = nil
+                                     do (<span style="font-weight: bold;">push</span> el buff)
+                                     do (incf i)
+                                     if (eq (% i cols) 0)
+                                     do (<span style="font-weight: bold;">push</span> '\\\\ buff)
+                                     and collect (reverse buff)
+                                     and do (<span style="font-weight: bold;">setf</span> buff nil)
+                                     else
+                                     do (<span style="font-weight: bold;">push</span> '&amp; buff)))))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org238816b" class="outline-2">
+<h2 id="org238816b"><span class="section-number-2">7.</span> Types</h2>
+<div class="outline-text-2" id="text-7">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:keyword</span> ()
+  `(<span style="font-weight: bold;">and</span> symbol
+        (satisfies ,(<span style="font-weight: bold;">lambda</span> (k)
+                      (string-prefix-p listex-keyword-prefix
+                                       (format <span style="font-style: italic;">"%s"</span> k))))))
+
+(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:car-is-atom</span> ()
+  '(satisfies (<span style="font-weight: bold;">lambda</span> (expr) (atom (car expr)))))
+
+(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:command</span> ()
+  `(<span style="font-weight: bold;">and</span> list
+        listex:car-is-atom
+        (satisfies ,(<span style="font-weight: bold;">lambda</span> (expr)
+                      (<span style="font-weight: bold;">let</span> ((name (format <span style="font-style: italic;">"%s"</span> (car expr))))
+                        (string-prefix-p listex-command-prefix
+                                         name))))))
+
+(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:operator</span> ()
+  `(<span style="font-weight: bold;">and</span> list
+        listex:car-is-atom
+        (satisfies ,(<span style="font-weight: bold;">lambda</span> (expr)
+                      (<span style="font-weight: bold;">let</span> ((name (car expr)))
+                        (<span style="font-weight: bold;">or</span> (member name listex-operator-list)
+                            (string-prefix-p listex-operator-prefix
+                                             (format <span style="font-style: italic;">"%s"</span> name))))))))
+
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:macro-get-fun</span> (name)
+  `(<span style="font-weight: bold;">or</span> (alist-get ,name listex-tex-macro--alist-user)
+       (alist-get ,name listex-tex-macro-alist)))
+
+(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:macro</span> ()
+  `(<span style="font-weight: bold;">and</span> list
+        listex:car-is-atom
+        (satisfies ,(<span style="font-weight: bold;">lambda</span> (expr) (listex:macro-get-fun (car expr))))))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org6cae794" class="outline-2">
+<h2 id="org6cae794"><span class="section-number-2">8.</span> Render</h2>
+<div class="outline-text-2" id="text-8">
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">listex:render-tex</span> (expr)
+  <span style="font-style: italic;">"Render listex DSL into latex"</span>
+  (<span style="font-weight: bold;">cl-etypecase</span> expr
+    (listex:keyword (format <span style="font-style: italic;">"\\%s"</span>
+                            (string-remove-prefix listex-keyword-prefix
+                                                  (symbol-name expr))))
+    (listex:command
+     (<span style="font-weight: bold;">let*</span> ((args (mapcar (<span style="font-weight: bold;">lambda</span> (e) (<span style="font-weight: bold;">cl-etypecase</span> e
+                                        (vector e)
+                                        (otherwise `(braced ,e))))
+                          (cdr expr)))
+            (name (format <span style="font-style: italic;">"\\%s"</span> (string-remove-prefix listex-command-prefix
+                                                      (symbol-name (car expr)))))
+            (args-strings (mapcar #'listex:render-tex args))
+            <span style="font-weight: bold; font-style: italic;">;</span><span style="font-weight: bold; font-style: italic;">(braced-strings (mapcar #'listex:braced args-strings))</span>
+            )
+       (concat name (string-join args-strings))
+       ))
+    (listex:operator (<span style="font-weight: bold;">let*</span> ((name (car expr))
+                            (namestr (symbol-name name))
+                            (op (<span style="font-weight: bold;">if</span> (&gt; (length namestr) 1)
+                                    (string-remove-prefix listex-operator-prefix
+                                                          namestr)
+                                  namestr)))
+                      (string-join (mapcar #'listex:render-tex (cdr expr))
+                                   (format <span style="font-style: italic;">" %s "</span> op))))
+    (listex:macro (<span style="font-weight: bold;">let*</span> ((args (cdr expr))
+                         (name (car expr))
+                         (f (listex:macro-get-fun name)))
+                    (funcall f args)))
+    (list (string-join (mapcar #'listex:render-tex expr) <span style="font-style: italic;">" "</span>))
+    (atom (format <span style="font-style: italic;">"%s"</span> expr))))
+
+(<span style="font-weight: bold;">defun</span> <span style="font-weight: bold;">listex</span> (expr)
+  (listex:render-tex expr))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org54fe857" class="outline-2">
+<h2 id="org54fe857"><span class="section-number-2">9.</span> Examples</h2>
+<div class="outline-text-2" id="text-9">
+</div>
+
+<div id="outline-container-org470704c" class="outline-3">
+<h3 id="org470704c"><span class="section-number-3">9.1.</span> Some equations</h3>
+<div class="outline-text-3" id="text-9-1">
+</div>
+<div id="outline-container-org2bb3a3f" class="outline-4">
+<h4 id="org2bb3a3f"><span class="section-number-4">9.1.1.</span> Newton</h4>
+<div class="outline-text-4" id="text-9-1-1">
+<div class="org-src-container">
+<pre class="src src-listex">(let ((d '(-mathrm d))
+      (F '(-mathbf F))
+      (v '(-mathbf v))
+      (p '(-mathbf p))
+      (X '%\\times))
+  (labels ((D (e x) `(-frac (,d ,e) (,d ,x))))
+    `(= ,F
+	,(D p 't)
+	(+ (,X ,(D 'm 't)
+		   ,p)
+	   (,X m
+	       ,(D v 't)))
+	)))
+</pre>
+</div>
+
+\begin{equation}
+\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{\mathrm{d} t} \times \mathbf{p} + m \times \frac{\mathrm{d} \mathbf{v}}{\mathrm{d} t}
+\end{equation}
+</div>
+</div>
+
+<div id="outline-container-org05fb17f" class="outline-4">
+<h4 id="org05fb17f"><span class="section-number-4">9.1.2.</span> Coupled cluster</h4>
+<div class="outline-text-4" id="text-9-1-2">
+<p>
+This example writes the cluster operator in coupled cluster theory
+as an example for managing align environments.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-listex">(labels (
+	 ;; mathematics and second quantization
+	 (Σ (idx) `(_ (/sum /limits) ,idx))
+	 (t (up down) `(_ (^ t ,up) ,down))
+	 (a (i) `(_ (-hat a) ,i))
+	 (á (i) `(^ ,(a i) /dagger))
+	 (áa (up down) `(,(mapcar #'á up)
+			 ,(mapcar #'a (reverse down))))
+
+	 ;; define particles and holes
+	 (parts (n) (seq-take '(a b c d e f g A B C D E F G) n))
+	 (holes (n) (seq-take '(i j k l m n o I J K L M N O) n))
+
+	 ;; Coupled cluster term of order n
+	 (term (n) (let ((pow (math-power-of-2 n))
+			 (abc (parts n))
+			 (ijk (holes n)))
+		     (list (when (&gt; n 1) (list '-frac 1 pow))
+			   (Σ `(,@abc ,@ijk))
+			   (t abc ijk)
+			   (áa abc ijk))))
+	 )
+  ;; this inserts a plus and &amp; and \\ for the align environment
+  (let ((+ '%\\\\&amp;+))
+
+    `(%&amp;= (-hat T)
+	  (,+ ,@(cl-loop for i from 1 to 10 collect (term i))
+	      /cdots))))
+</pre>
+</div>
+
+\begin{align*}
+\hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b i j} t^{a b}_{i j} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{8} \sum \limits_{a b c i j k} t^{a b c}_{i j k} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{16} \sum \limits_{a b c d i j k l} t^{a b c d}_{i j k l} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{32} \sum \limits_{a b c d e i j k l m} t^{a b c d e}_{i j k l m} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{64} \sum \limits_{a b c d e f i j k l m n} t^{a b c d e f}_{i j k l m n} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{128} \sum \limits_{a b c d e f g i j k l m n o} t^{a b c d e f g}_{i j k l m n o} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{256} \sum \limits_{a b c d e f g A i j k l m n o I} t^{a b c d e f g A}_{i j k l m n o I} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{512} \sum \limits_{a b c d e f g A B i j k l m n o I J} t^{a b c d e f g A B}_{i j k l m n o I J} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{1024} \sum \limits_{a b c d e f g A B C i j k l m n o I J K} t^{a b c d e f g A B C}_{i j k l m n o I J K} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{C}^{\dagger} \hat{a}_{K} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \cdots
+\end{align*}
+</div>
+</div>
+</div>
+
+
+
+<div id="outline-container-org7877b43" class="outline-3">
+<h3 id="org7877b43"><span class="section-number-3">9.2.</span> Latex document example</h3>
+<div class="outline-text-3" id="text-9-2">
+<p>
+Even though <code>listex</code> is really thought for typesetting of formulas,
+in principle writing documents in the style of
+<a href="https://github.com/abo-abo/eltex">eltex</a> is roughly possible, but consider just using <code>org</code> for this.
+Consider also reading <a href="https://oremacs.com/2015/01/23/eltex/">this blog post</a> if you really want to write
+whole latex documents using s-expressions.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-listex">'(progn
+   (-documentclass [12pt] article)
+   (-usepackage hyperref)
+   (env document
+	(-section Introduction)
+	(nl)
+	(progn This document is is an example for the (-texttt LisTeX)
+	       domain specific language \(DSL\).
+	       (nl)
+
+	       You can also do inline math
+
+	       ($ (+ (^ A 5)) + 5)
+
+	       or displaystyle math
+
+	       (nl)
+
+	       ($$ (+ (^ A 5) 5)
+		   .)
+
+	       )))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org11c9b7c" class="outline-3">
+<h3 id="org11c9b7c"><span class="section-number-3">9.3.</span> A matrix macro</h3>
+<div class="outline-text-3" id="text-9-3">
+<div class="org-src-container">
+<pre class="src src-listex">'(matrix 2 3
+	 (-hat A) B (-dot E)
+	 (-tilde (-hat C)) D (_ E (matrix 2 2
+					  1 2
+					  3 4)))
+</pre>
+</div>
+
+<p>
+\[\begin{pmatrix}
+\hat{A} & B & \dot{E} \\ \tilde{\hat{C}} & D & E_{\begin{pmatrix}
+1 & 2 \\ 3 & 4 \\
+\end{pmatrix}} \\
+\end{pmatrix}\]
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9e9ffdf" class="outline-3">
+<h3 id="org9e9ffdf"><span class="section-number-3">9.4.</span> <span class="todo TODO">TODO</span> Newcmdlet</h3>
+<div class="outline-text-3" id="text-9-4">
+<p>
+There should be an easy way of defining lexically macros,
+but I should think about tihs.
+</p>
+
+<p>
+This is what works now, however the problem is that I would not want
+to have to call <code>listex</code> before the command.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-listex">(newcmdlet ((χ "%s^{%s^{%s}}" args args args))
+	   (listex '(-frac (χ 5 5)
+			   /varphi)))
+
+</pre>
+</div>
+
+<p>
+\[\frac{5 5^{5 5^{5 5}}}{\varphi}\]
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Alejandro Gallo</p>
+<p class="date">Created: 2021-11-26 Fri 22:53</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
