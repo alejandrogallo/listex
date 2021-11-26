@@ -4,6 +4,5 @@ README.html
 config.el
 deps.mk
 nix/
-shell.nix
 tools/
 
