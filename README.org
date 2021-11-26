@@ -1,0 +1,708 @@
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle listex.el :results none
+:END:
+#+title: LisTeX
+#+author: Alejandro Gallo
+
+* Introduction
+
+This packages comes from the ocasional frustration of writing
+latex in =org-mode= and having a sane default formating
+of the equations. Also it comes from the lack of frustration
+formating and writing s-expressions in Lisp.
+Let's say, it originates in a "frustration transfer".
+
+This package is written as a literate program cite:knuth.
+If you want to contribute please consider writing in the style of the document.
+
+** TODO What is to be done
+
+- Some real world testing
+  - to find bugs
+  - to finalize the DSL, right now I think it's quite
+    ergonomic, but it might be wrong.
+- Maybe a better way to generate macros
+- Think about which rules to implement for the latex indentation.
+
+* Prolog                                                           :noexport:
+#+begin_src emacs-lisp
+(require 'cl-lib)
+#+end_src
+
+* org-src blocks
+
+In org mode we want to have easily accessible code blocks like
+
+#+begin_src org :eval no
+,#+begin_src listex :env al* :label dr-dv
+(let ((d '(-mathrm d)))
+  `(-frac (,d r)
+          (,d v)))
+,#+end_src
+
+,#+RESULTS:
+:results:
+\begin{align*}
+\label{dr-dv} \frac{\mathrm{d} r}{\mathrm{d} v}
+\end{align*}
+:end:
+#+end_src
+
+
+We have beyond the usual flags, the following:
+
+- :label :: This is the latex label that should be used included
+  in the expression automatically.
+  Also a local lisp variable will be created with the same
+  name so that one can reuse the expression somewhere else.
+- :lisp-label :: Sometime we want to reuse the expression
+  but we do not want a tex label, so =:lisp-label=
+  sets the lisp variable to the expression as in =:label=
+  but then no tex label is necessary.
+- :env :: It is possible to wrap the expression in an environment
+  before the expression gets rendered to latex.
+  Possible values are for instance =$, $$, eq, eq*, al, al*=
+  etc.
+
+
+
+#+begin_src emacs-lisp
+(defvar org-babel-default-header-args:listex '((:exports . "results")
+                                               (:results . "value drawer")))
+
+(defvar org-babel-header-args:listex '((:label . :any)
+                                       (:lisp-label . :any)
+                                       (:env . :any))
+  "listex-specific header arguments.")
+
+(defun org-babel-execute:listex (body params)
+  (labels ((maybe-symbol (key) (let ((maybe-string (cdr (assq key params))))
+                                 (when maybe-string (intern maybe-string)))))
+    (let* ((expr (eval (car (read-from-string body))))
+           (env (maybe-symbol :env))
+           (label (maybe-symbol :label))
+           (lisp-label (or (maybe-symbol :lisp-label)
+                           label)))
+      (when lisp-label
+        (message "new lisp-label defined: %s" lisp-label)
+        (eval `(setq-local ,lisp-label ',expr)))
+      (listex
+       (if env
+           `(,env ,(if label
+                       `((-label ,label) ,expr)
+                     expr))
+         expr)))))
+#+end_src
+
+* Derived mode
+
+We define a derived mode based on the =emacs-lisp= mode
+to make it easy to edit the s-expressions with your preferred bindings.
+
+#+begin_src emacs-lisp
+(define-derived-mode listex-mode
+  emacs-lisp-mode "LiSTeX"
+  "Major mode for listex.
+\\{listex-mode-map}")
+#+end_src
+
+* Main implementation
+
+This package has the following concepts:
+
+- [[command][command]] ::
+  This should be the equivalent to latex commands, i.e.,
+  if =cmd= is a latex command of 3 variables, then
+  elisp:(cmd a b c d e) should be rendered as
+
+| name                  | prefix | what                             | lisp             | tex                | Rule                           |
+|-----------------------+--------+----------------------------------+------------------+--------------------+--------------------------------|
+| command <<command>>   | =-=    | Latex commands                   | =(-cmd a b c d)= | =\cmd{a}{b}{c}{d}= | by prefix                      |
+| keyword <<keyword>>   | =/=    | Single keywords                  | =(/cmd a b c d)= | =\cmd a b c d=     | by prefix                      |
+| operator <<operator>> |        | Infix inclusion                  | =(+ a b c)=      | =a + b + c=        | =listex-operator-list=         |
+| tex-macro             |        | Macro returning a string         | =(^ a b)=        | =a^{b}=            | =listex-tex-macro-alias-alist= |
+| atom                  |        | Convert whatever to string       | =int=            | =int=              |                                |
+| list                  |        | Join elements by space           | =(a b)=          | =a b=              |                                |
+| vector                |        | Will be copied as is             | =[a=5, b]=       | =[a=5, b]=         |                                |
+|-----------------------+--------+----------------------------------+------------------+--------------------+--------------------------------|
+| lisp-macro (TODO)   |        | Macro returning a symbol or list |                  |                    | =listex-lisp-macro-alist=      |
+
+
+* Misc
+#+begin_src emacs-lisp
+(defvar listex-keyword-prefix "/")
+(defvar listex-command-prefix "-")
+
+(defvar listex-operator-prefix "%")
+(defvar listex-operator-list '(+ * - =))
+
+(defun listex:indentation (len)
+  (eval `(concat ,@(cl-loop for i from 1 to len collect " "))))
+#+end_src
+
+* Macros definition
+
+#+begin_src emacs-lisp
+(defvar listex-tex-macro-alist nil)
+(defvar listex-lisp-macro-alist nil)
+;; this is for the newcmdlet macro
+(defvar listex-tex-macro--alist-user nil)
+
+(defmacro listex:addcmd (alist key fmt &rest !args)
+  `(setf (alist-get ',key ,alist)
+         ,(cl-etypecase fmt
+            (function fmt)
+            (otherwise `(lambda (args)
+                         ,(if fmt
+                              `(format ,fmt ,@(cl-loop
+                                               for a in !args
+                                               collect `(listex:render-tex
+                                                         ,a)))
+                            `(listex:render-tex ,@!args)))))
+         ))
+
+(defmacro listex:newcmd (key fmt &rest !args)
+  `(listex:addcmd listex-tex-macro-alist
+                  ,key ,fmt ,@!args))
+
+(defmacro newcmdlet (ncmds &rest body)
+  `(let (listex-tex-macro--alist-user)
+     ,@(loop for cmd in ncmds
+             collect
+             `(listex:addcmd listex-tex-macro--alist-user
+                             ,(car cmd) ,(cadr cmd)
+                             ,@(cddr cmd)))
+     ,@body))
+
+;; important macros
+(listex:newcmd braced "{%s}" args)
+(listex:newcmd progn "%s" args)
+
+
+
+
+
+
+;; left right stuff
+(listex:newcmd lr "\\left%s%s\\right%s" (car args) (cddr args) (cadr args))
+(listex:newcmd lrp nil `(lr \( \) ,@args))
+(listex:newcmd lrs nil `(lr \[ \] ,@args))
+(listex:newcmd set nil `(lr /{ /} ,@args))
+
+;; quantum mechanics
+(listex:newcmd <| nil `(lr /langle | ,@args))
+(listex:newcmd |> nil `(lr | /rangle ,@args))
+
+;; exponents
+(listex:newcmd ^ "%s^{%s}" (car args) (cdr args))
+(listex:newcmd _ "%s_{%s}" (car args) (cdr args))
+(listex:newcmd ^_ "%s^{%s}_{%s}" (car args) (cadr args) (caddr args))
+(listex:newcmd _^ "%s_{%s}^{%s}" (car args) (cadr args) (caddr args))
+
+;; wrapping
+(listex:newcmd begend "%s%s%s"
+               (car args)
+               (cdr args)
+               (car args))
+(listex:newcmd env "\\begin{%s}\n%s\n\\end{%s}"
+               (car args)
+               (cdr args)
+               (car args))
+(listex:newcmd mat nil `(env pmatrix ,@args))
+
+;; Math environments
+(listex:newcmd $ nil `(begend $ ,@args))
+(listex:newcmd $$ nil `(begend $$ ,@args))
+(listex:newcmd eq nil `(env equation ,@args))
+(listex:newcmd eq* nil `(env equation* ,@args))
+(listex:newcmd al nil `(env align ,@args))
+(listex:newcmd al* nil `(env align* ,@args))
+
+;; force newlines in the output
+(listex:newcmd terpri "\n")
+(listex:newcmd br "\n")
+(listex:newcmd nl "\n")
+
+;; more convoluted example
+(listex:newcmd matrix
+               (lambda (args)
+                 (let ((rows (car args))
+                       (cols (cadr args))
+                       (elements (cddr args)))
+                   (cl-assert (eq (length elements) (* cols rows)))
+                   (listex:render-tex
+                    `(env pmatrix
+                          ,@(cl-loop for el in elements
+                                     with i = 0
+                                     with buff = nil
+                                     do (push el buff)
+                                     do (incf i)
+                                     if (eq (% i cols) 0)
+                                     do (push '\\\\ buff)
+                                     and collect (reverse buff)
+                                     and do (setf buff nil)
+                                     else
+                                     do (push '& buff)))))))
+#+end_src
+
+* Types
+
+
+#+begin_src emacs-lisp
+(cl-deftype listex:keyword ()
+  `(and symbol
+        (satisfies ,(lambda (k)
+                      (string-prefix-p listex-keyword-prefix
+                                       (format "%s" k))))))
+
+(cl-deftype listex:car-is-atom ()
+  '(satisfies (lambda (expr) (atom (car expr)))))
+
+(cl-deftype listex:command ()
+  `(and list
+        listex:car-is-atom
+        (satisfies ,(lambda (expr)
+                      (let ((name (format "%s" (car expr))))
+                        (string-prefix-p listex-command-prefix
+                                         name))))))
+
+(cl-deftype listex:operator ()
+  `(and list
+        listex:car-is-atom
+        (satisfies ,(lambda (expr)
+                      (let ((name (car expr)))
+                        (or (member name listex-operator-list)
+                            (string-prefix-p listex-operator-prefix
+                                             (format "%s" name))))))))
+
+(defmacro listex:macro-get-fun (name)
+  `(or (alist-get ,name listex-tex-macro--alist-user)
+       (alist-get ,name listex-tex-macro-alist)))
+
+(cl-deftype listex:macro ()
+  `(and list
+        listex:car-is-atom
+        (satisfies ,(lambda (expr) (listex:macro-get-fun (car expr))))))
+#+end_src
+
+* Render
+#+begin_src emacs-lisp
+
+(defun listex:render-tex (expr)
+  "Render listex DSL into latex"
+  (cl-etypecase expr
+    (listex:keyword (format "\\%s"
+                            (string-remove-prefix listex-keyword-prefix
+                                                  (symbol-name expr))))
+    (listex:command
+     (let* ((args (mapcar (lambda (e) (cl-etypecase e
+                                        (vector e)
+                                        (otherwise `(braced ,e))))
+                          (cdr expr)))
+            (name (format "\\%s" (string-remove-prefix listex-command-prefix
+                                                      (symbol-name (car expr)))))
+            (args-strings (mapcar #'listex:render-tex args))
+            ;(braced-strings (mapcar #'listex:braced args-strings))
+            )
+       (concat name (string-join args-strings))
+       ))
+    (listex:operator (let* ((name (car expr))
+                            (namestr (symbol-name name))
+                            (op (if (> (length namestr) 1)
+                                    (string-remove-prefix listex-operator-prefix
+                                                          namestr)
+                                  namestr)))
+                      (string-join (mapcar #'listex:render-tex (cdr expr))
+                                   (format " %s " op))))
+    (listex:macro (let* ((args (cdr expr))
+                         (name (car expr))
+                         (f (listex:macro-get-fun name)))
+                    (funcall f args)))
+    (list (string-join (mapcar #'listex:render-tex expr) " "))
+    (atom (format "%s" expr))))
+
+(defun listex (expr)
+  (listex:render-tex expr))
+#+end_src
+
+* Examples
+:PROPERTIES:
+:header-args:listex: :exports both
+:END:
+
+** Some equations
+
+*** Newton
+#+begin_src listex :lisp-label newton :env eq :exports both
+(let ((d '(-mathrm d))
+      (F '(-mathbf F))
+      (v '(-mathbf v))
+      (p '(-mathbf p))
+      (X '%\\times))
+  (labels ((D (e x) `(-frac (,d ,e) (,d ,x))))
+    `(= ,F
+        ,(D p 't)
+        (+ (,X ,(D 'm 't)
+                   ,p)
+           (,X m
+               ,(D v 't)))
+        )))
+#+end_src
+
+#+RESULTS:
+:results:
+\begin{equation}
+\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{\mathrm{d} t} \times \mathbf{p} + m \times \frac{\mathrm{d} \mathbf{v}}{\mathrm{d} t}
+\end{equation}
+:end:
+
+*** Coupled cluster
+
+This example writes the cluster operator in coupled cluster theory
+as an example for managing align environments.
+
+#+begin_src listex :env al*
+(labels (
+         ;; mathematics and second quantization
+         (Σ (idx) `(_ (/sum /limits) ,idx))
+         (t (up down) `(_ (^ t ,up) ,down))
+         (a (i) `(_ (-hat a) ,i))
+         (á (i) `(^ ,(a i) /dagger))
+         (áa (up down) `(,(mapcar #'á up)
+                         ,(mapcar #'a (reverse down))))
+
+         ;; define particles and holes
+         (parts (n) (seq-take '(a b c d e f g A B C D E F G) n))
+         (holes (n) (seq-take '(i j k l m n o I J K L M N O) n))
+
+         ;; Coupled cluster term of order n
+         (term (n) (let ((pow (math-power-of-2 n))
+                         (abc (parts n))
+                         (ijk (holes n)))
+                     (list (when (> n 1) (list '-frac 1 pow))
+                           (Σ `(,@abc ,@ijk))
+                           (t abc ijk)
+                           (áa abc ijk))))
+         )
+  ;; this inserts a plus and & and \\ for the align environment
+  (let ((+ '%\\\\&+))
+
+    `(%&= (-hat T)
+          (,+ ,@(cl-loop for i from 1 to 10 collect (term i))
+              /cdots))))
+#+end_src
+
+#+RESULTS:
+:results:
+\begin{align*}
+\hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b i j} t^{a b}_{i j} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{8} \sum \limits_{a b c i j k} t^{a b c}_{i j k} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{16} \sum \limits_{a b c d i j k l} t^{a b c d}_{i j k l} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{32} \sum \limits_{a b c d e i j k l m} t^{a b c d e}_{i j k l m} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{64} \sum \limits_{a b c d e f i j k l m n} t^{a b c d e f}_{i j k l m n} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{128} \sum \limits_{a b c d e f g i j k l m n o} t^{a b c d e f g}_{i j k l m n o} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{256} \sum \limits_{a b c d e f g A i j k l m n o I} t^{a b c d e f g A}_{i j k l m n o I} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{512} \sum \limits_{a b c d e f g A B i j k l m n o I J} t^{a b c d e f g A B}_{i j k l m n o I J} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{1024} \sum \limits_{a b c d e f g A B C i j k l m n o I J K} t^{a b c d e f g A B C}_{i j k l m n o I J K} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{C}^{\dagger} \hat{a}_{K} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \cdots
+\end{align*}
+:end:
+
+
+
+** Latex document example
+
+Even though =listex= is really thought for typesetting of formulas,
+in principle writing documents in the style of
+[[https://github.com/abo-abo/eltex][eltex]] is roughly possible, but consider just using =org= for this.
+Consider also reading [[https://oremacs.com/2015/01/23/eltex/][this blog post]] if you really want to write
+whole latex documents using s-expressions.
+
+#+begin_src listex :exports code :wrap src latex
+'(progn
+   (-documentclass [12pt] article)
+   (-usepackage hyperref)
+   (env document
+        (-section Introduction)
+        (nl)
+        (progn This document is is an example for the (-texttt LisTeX)
+               domain specific language \(DSL\).
+               (nl)
+
+               You can also do inline math
+
+               ($ (+ (^ A 5)) + 5)
+
+               or displaystyle math
+
+               (nl)
+
+               ($$ (+ (^ A 5) 5)
+                   .)
+
+               )))
+#+end_src
+
+#+RESULTS:
+#+begin_src latex
+\documentclass[12pt]{article} \usepackage{hyperref} \begin{document}
+\section{Introduction} 
+ This document is is an example for the \texttt{LisTeX} domain specific language (DSL). 
+ You can also do inline math $A^{5} + 5$ or displaystyle math 
+ $$A^{5} + 5 .$$
+\end{document}
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\documentclass[12pt]{article} \usepackage{hyperref} \begin{document}
+\section{Introduction} 
+ This document is is an example for the \texttt{LisTeX} domain specific language (DSL). 
+ You can also do inline math $A^{5} + 5$ or displaystyle math 
+ $$A^{5} + 5 .$$
+\end{document}
+#+end_export
+
+** A matrix macro
+
+#+begin_src listex :env $$
+'(matrix 2 3
+         (-hat A) B (-dot E)
+         (-tilde (-hat C)) D (_ E (matrix 2 2
+                                          1 2
+                                          3 4)))
+#+end_src
+
+#+RESULTS:
+:results:
+$$\begin{pmatrix}
+\hat{A} & B & \dot{E} \\ \tilde{\hat{C}} & D & E_{\begin{pmatrix}
+1 & 2 \\ 3 & 4 \\
+\end{pmatrix}} \\
+\end{pmatrix}$$
+:end:
+
+** TODO Newcmdlet
+
+There should be an easy way of defining lexically macros,
+but I should think about tihs.
+
+This is what works now, however the problem is that I would not want
+to have to call =listex= before the command.
+
+#+begin_src listex :env $$
+(newcmdlet ((χ "%s^{%s^{%s}}" args args args))
+           (listex '(-frac (χ 5 5)
+                           /varphi)))
+
+#+end_src
+
+#+RESULTS:
+:results:
+$$\frac{5 5^{5 5^{5 5}}}{\varphi}$$
+:end:
+
+* Tests                                                            :noexport:
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle t.el
+:END:
+#+begin_src emacs-lisp
+(defmacro assert-type (type &rest elements)
+  `(dolist (expr ',elements)
+     (cl-assert (cl-typep expr ',type) nil "%s is not of type %s" expr ',type)))
+
+(defmacro assert-type! (type &rest elements)
+  `(dolist (expr ',elements)
+     (cl-assert (not (cl-typep expr ',type)) nil "%s is not of type %s" expr ',type)))
+
+;; keyword
+(assert-type listex:keyword /int /sum /alpha)
+(assert-type! listex:keyword int sum alpha)
+
+;; command
+(assert-type listex:command
+             (-math) (-mathrm d x))
+(assert-type! listex:command
+              (2) -mathrm ((-mathrm d) x))
+
+;; operator
+(dolist (op listex-operator-list)
+  (cl-assert (cl-typep `(,op) 'listex:operator)))
+(assert-type listex:operator
+             (+) (-) (*)
+             (%custom) (%) (%%))
+
+;; macro
+(assert-type listex:macro
+             (^) (^ A) (^ A B 2)
+             (_) (_ A) (_ A B))
+
+
+;; rendering
+(defun assert-render (alist)
+  (dolist (c alist)
+    (cl-destructuring-bind (str . expr) c
+      (cl-assert (string= str (listex:render-tex expr))))))
+
+(assert-render
+ '(("int" . (int))
+   ("pretty raw" . (pretty raw))
+   ("int" . int)
+   ("\\int" . /int)
+   ("\\int x \\d" . (/int x /d))
+   ("\\frac{A}{5}" . (-frac A 5))
+   ("A % B % C" . (% A B C))
+   ("A^{2}" . (^ A 2))))
+#+end_src
+
+#+RESULTS:
+
+* Building                                                         :noexport:
+** Emacs configuration
+
+#+begin_src emacs-lisp :tangle config.el
+(require 'package)
+
+(setq package-enable-at-startup t)
+(setq package-archives
+      '(("gnu"   . "http://elpa.gnu.org/packages/")
+        ("melpa" . "http://melpa.org/packages/"   )
+        ("org"   . "http://orgmode.org/elpa/"     )))
+(message "Initializing packages")
+(package-initialize)
+
+(message "Setting up use-package")
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(message "Requiring use-package")
+(eval-when-compile
+  (require 'use-package))
+
+(message "requiring org")
+(require 'org)
+
+(message "up org-contrib")
+(use-package org-plus-contrib
+  :defer t
+  :ensure t
+  :config
+  (setq org-src-fontify-natively t
+        org-src-preserve-indentation t
+        org-src-tab-acts-natively t))
+
+(message "htmlize")
+(use-package htmlize
+  :defer t
+  :ensure t)
+#+end_src
+
+** Makefile
+:PROPERTIES:
+:header-args: :comments both
+:header-args:makefile: :tangle Makefile
+:END:
+*** Local Dependencies
+
+This file should be used to declare the main dependencies of
+the project, whereas the main =Makefile= of the project
+is for main rules.
+
+#+begin_src makefile
+-include deps.mk
+#+end_src
+
+*** Local configuration
+
+The =config.mk= file lets you override variables at build time
+for your project
+
+#+begin_src makefile
+-include config.mk
+#+end_src
+
+*** Emacs
+First of all we need to define the main emacs
+
+#+begin_src makefile
+EMACS_CONFIG ?= config.el
+EMACS ?= emacs --batch -Q --load $(EMACS_CONFIG)
+#+end_src
+
+and we need org to tex
+
+#+begin_src makefile
+
+.PRECIOUS:
+%.tangle.tex: %.org
+	$(EMACS) $< -f org-babel-tangle
+
+.PRECIOUS:
+%.export.tex: %.org
+	$(EMACS) $< -f org-latex-export-to-latex
+
+.PRECIOUS:
+%.export.html: %.org
+	$(EMACS) $< -f org-html-export-to-html
+
+.PRECIOUS:
+%.export.beamer.tex: %.org
+	$(EMACS) $< -f org-beamer-export-to-latex
+#+end_src
+
+*** Tectonic latex
+
+Use tectonic to compile latex, it's easier
+and you can just download it using this script
+#+begin_src sh :tangle tools/install-tectonic :mkdirp t :comments none
+#!/usr/bin/env bash
+# author: Alejandro Gallo
+
+bin="$HOME/bin"
+url="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic%400.8.0/tectonic-0.8.0-x86_64-unknown-linux-musl.tar.gz"
+
+mkdir -p $bin
+
+wget -O - "$url" |
+gunzip           |
+tar xvf - -C$bin
+#+end_src
+
+
+#+begin_src makefile
+TECTONIC_RERUNS ?=
+%.pdf: %.tex
+	$(info [TEX] $< -> $@)
+	tectonic $(TECTONIC_RERUNS) $<
+#+end_src
+
+
+** Nix shell
+
+If you used the nix package manager you can use the supplied
+shell to compile the examples.
+
+#+begin_src nix :tangle shell.nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.mkShell rec {
+  buildInputs = with pkgs; [emacs];
+}
+
+#+end_src
+
+
+** Dependencies
+
+Here are the dependencies of the document
+
+#+begin_src makefile :tangle deps.mk
+DEPS = \
+listex.el t.el \
+
+all: $(DEPS) test
+
+.PRECIOUS:
+%.html: %.org
+	$(EMACS) $< -f org-html-export-to-html
+
+test: listex.el t.el
+	$(EMACS) --load listex.el --load t.el
+
+listex.el t.el: README.org
+	$(EMACS) $< -f org-babel-tangle
+
+.PHONY: all test
+#+end_src
