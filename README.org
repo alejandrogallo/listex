@@ -15,6 +15,8 @@ Let's say, it originates in a "frustration transfer".
 This package is written as a literate program cite:knuth.
 If you want to contribute please consider writing in the style of the document.
 
+You can see a rendered version of this document [[https://alejandrogallo.github.io/listex][here]].
+
 ** TODO What is to be done
 
 - Some real world testing
