@@ -40,8 +40,54 @@
 (defun listex:indentation (len)
   (eval `(concat ,@(cl-loop for i from 1 to len collect " "))))
 
+(cl-deftype listex:keyword ()
+  '(and symbol
+        (satisfies (lambda (k)
+                     (string-prefix-p listex-keyword-prefix
+                                      (format "%s" k))))))
+
+(cl-deftype listex:car-is-atom ()
+  '(satisfies (lambda (expr) (atom (car expr)))))
+
+(cl-deftype listex:command ()
+  '(and list
+        listex:car-is-atom
+        (satisfies (lambda (expr)
+                     (let ((name (format "%s" (car expr))))
+                       (string-prefix-p listex-command-prefix
+                                        name))))))
+
+(cl-deftype listex:operator ()
+  '(and list
+        listex:car-is-atom
+        (satisfies (lambda (expr)
+                     (let ((name (car expr)))
+                       (or (member name listex-operator-list)
+                           (string-prefix-p listex-operator-prefix
+                                            (format "%s" name))))))))
+
+(defmacro listex:macro-get-fun (name)
+  `(or (alist-get ,name listex-tex-macro--alist-user)
+       (alist-get ,name listex-tex-macro-alist)))
+
+
+(cl-deftype listex:macro ()
+  `(and list
+        listex:car-is-atom
+        (satisfies ,(lambda (expr) (listex:macro-get-fun (car expr))))))
+
+(defmacro listex:lisp-macro-get-fun (name)
+  `(alist-get ,name listex-lisp-macro-alist))
+
+(cl-deftype listex:lisp-macro ()
+  `(and list
+        listex:car-is-atom
+        (satisfies ,(lambda (expr) (listex:lisp-macro-get-fun (car expr))))))
+
 (defvar listex-tex-macro-alist nil)
 (defvar listex-lisp-macro-alist nil)
+
+;; TODO: remove and use cl-letf
 ;; this is for the newcmdlet macro
 (defvar listex-tex-macro--alist-user nil)
 
@@ -49,14 +95,26 @@
   `(setf (alist-get ',key ,alist)
          ,(cl-etypecase fmt
             (function fmt)
-            (otherwise `(lambda (args)
-                         ,(if fmt
-                              `(format ,fmt ,@(cl-loop
-                                               for a in !args
-                                               collect `(listex:render-tex
-                                                         ,a)))
-                            `(listex:render-tex ,@!args)))))
-         ))
+            (string `(lambda (args)
+                       (format ,fmt
+                               ,@(cl-loop
+                                  for a in !args
+                                  collect `(listex:render-tex ,a))))))))
+
+(defmacro listex:lisp-macro-alist-pair (alist key list-or-fun)
+  `(list '(alist-get ',key ,alist)
+     ,(cl-etypecase list-or-fun
+        (function list-or-fun)
+        (list `(lambda (args)
+                 ,list-or-fun)))))
+
+(defmacro listex:defmacro (key list-or-fun)
+  `(let ((args (listex:lisp-macro-alist-pair listex-lisp-macro-alist
+                                             ,key
+                                             ,list-or-fun)))
+     (eval `(setf ,@args))))
+
+
 
 (defmacro listex:newcmd (key fmt &rest !args)
   `(listex:addcmd listex-tex-macro-alist
@@ -64,31 +122,32 @@
 
 (defmacro newcmdlet (ncmds &rest body)
   `(let (listex-tex-macro--alist-user)
-     ,@(loop for cmd in ncmds
+     ,@(cl-loop for cmd in ncmds
              collect
              `(listex:addcmd listex-tex-macro--alist-user
                              ,(car cmd) ,(cadr cmd)
                              ,@(cddr cmd)))
      ,@body))
 
+
+;; set indentation for lt-macrolet and newcmdlet correctly
+(progn
+  (put 'lt-macrolet 'lisp-indent-function 'defun)
+  (put 'newcmdlet 'lisp-indent-function 'defun))
+
 ;; important macros
 (listex:newcmd braced "{%s}" args)
 (listex:newcmd progn "%s" args)
 
-
-
-
-
-
 ;; left right stuff
 (listex:newcmd lr "\\left%s%s\\right%s" (car args) (cddr args) (cadr args))
-(listex:newcmd lrp nil `(lr \( \) ,@args))
-(listex:newcmd lrs nil `(lr \[ \] ,@args))
-(listex:newcmd set nil `(lr /{ /} ,@args))
+(listex:defmacro lrp `(lr \( \) ,@args))
+(listex:defmacro lrs `(lr \[ \] ,@args))
+(listex:defmacro set `(lr /{ /} ,@args))
 
 ;; quantum mechanics
-(listex:newcmd <| nil `(lr /langle | ,@args))
-(listex:newcmd |> nil `(lr | /rangle ,@args))
+(listex:defmacro <| `(lr /langle | ,@args))
+(listex:defmacro |> `(lr | /rangle ,@args))
 
 ;; exponents
 (listex:newcmd ^ "%s^{%s}" (car args) (cdr args))
@@ -105,15 +164,16 @@
                (car args)
                (cdr args)
                (car args))
-(listex:newcmd mat nil `(env pmatrix ,@args))
+
+(listex:defmacro mat `(env pmatrix ,@args))
 
 ;; Math environments
-(listex:newcmd $ nil `(begend $ ,@args))
-(listex:newcmd $$ nil `(begend $$ ,@args))
-(listex:newcmd eq nil `(env equation ,@args))
-(listex:newcmd eq* nil `(env equation* ,@args))
-(listex:newcmd al nil `(env align ,@args))
-(listex:newcmd al* nil `(env align* ,@args))
+(listex:defmacro $ `(begend $ ,@args))
+(listex:defmacro $$ `(begend $$ ,@args))
+(listex:defmacro eq `(env equation ,@args))
+(listex:defmacro eq* `(env equation* ,@args))
+(listex:defmacro al `(env align ,@args))
+(listex:defmacro al* `(env align* ,@args))
 
 ;; force newlines in the output
 (listex:newcmd terpri "\n")
@@ -121,63 +181,28 @@
 (listex:newcmd nl "\n")
 
 ;; more convoluted example
-(listex:newcmd matrix
-               (lambda (args)
-                 (let ((rows (car args))
-                       (cols (cadr args))
-                       (elements (cddr args)))
-                   (cl-assert (eq (length elements) (* cols rows)))
-                   (listex:render-tex
-                    `(env pmatrix
-                          ,@(cl-loop for el in elements
-                                     with i = 0
-                                     with buff = nil
-                                     do (push el buff)
-                                     do (incf i)
-                                     if (eq (% i cols) 0)
-                                     do (push '\\\\ buff)
-                                     and collect (reverse buff)
-                                     and do (setf buff nil)
-                                     else
-                                     do (push '& buff)))))))
-
-(cl-deftype listex:keyword ()
-  `(and symbol
-        (satisfies ,(lambda (k)
-                      (string-prefix-p listex-keyword-prefix
-                                       (format "%s" k))))))
-
-(cl-deftype listex:car-is-atom ()
-  '(satisfies (lambda (expr) (atom (car expr)))))
-
-(cl-deftype listex:command ()
-  `(and list
-        listex:car-is-atom
-        (satisfies ,(lambda (expr)
-                      (let ((name (format "%s" (car expr))))
-                        (string-prefix-p listex-command-prefix
-                                         name))))))
-
-(cl-deftype listex:operator ()
-  `(and list
-        listex:car-is-atom
-        (satisfies ,(lambda (expr)
-                      (let ((name (car expr)))
-                        (or (member name listex-operator-list)
-                            (string-prefix-p listex-operator-prefix
-                                             (format "%s" name))))))))
-
-(defmacro listex:macro-get-fun (name)
-  `(or (alist-get ,name listex-tex-macro--alist-user)
-       (alist-get ,name listex-tex-macro-alist)))
-
-(cl-deftype listex:macro ()
-  `(and list
-        listex:car-is-atom
-        (satisfies ,(lambda (expr) (listex:macro-get-fun (car expr))))))
+(listex:defmacro matrix
+                 (lambda (args)
+                   (let ((rows (car args))
+                         (cols (cadr args))
+                         (elements (cddr args)))
+                     (cl-assert (eq (length elements) (* cols rows)))
+                     `(env pmatrix
+                           ,@(cl-loop for el in elements
+                                      with i = 0
+                                      with buff = nil
+                                      do (push el buff)
+                                      do (incf i)
+                                      if (eq (% i cols) 0)
+                                      do (push '\\\\ buff)
+                                      and collect (reverse buff)
+                                      and do (setf buff nil)
+                                      else
+                                      do (push '& buff))))))
 
 (defun listex:render-tex (expr)
-  "Render listex DSL into latex"
+  "Main function to convert a listex DSL s-expression
+   into a latex-compatible string."
   (cl-etypecase expr
     (listex:keyword (format "\\%s"
                             (string-remove-prefix listex-keyword-prefix
@@ -189,11 +214,8 @@
                           (cdr expr)))
             (name (format "\\%s" (string-remove-prefix listex-command-prefix
                                                       (symbol-name (car expr)))))
-            (args-strings (mapcar #'listex:render-tex args))
-            ;(braced-strings (mapcar #'listex:braced args-strings))
-            )
-       (concat name (string-join args-strings))
-       ))
+            (args-strings (mapcar #'listex:render-tex args)))
+       (concat name (string-join args-strings))))
     (listex:operator (let* ((name (car expr))
                             (namestr (symbol-name name))
                             (op (if (> (length namestr) 1)
@@ -206,10 +228,58 @@
                          (name (car expr))
                          (f (listex:macro-get-fun name)))
                     (funcall f args)))
+    (listex:lisp-macro (let* ((args (cdr expr))
+                              (name (car expr))
+                              (f (listex:lisp-macro-get-fun name))
+                              (new-expr (funcall f args)))
+                         (listex:render-tex new-expr)))
     (list (string-join (mapcar #'listex:render-tex expr) " "))
     (atom (format "%s" expr))))
 
+
+
+
 (defun listex (expr)
   (listex:render-tex expr))
+
+(defun listex:expand-lisp-macro (expr)
+  "This function should expand all listex:lisp-macro
+   s-expressions by the s-expression that they expand to,
+   so that in some cases you can just get the whole.
+
+   This works as it follows:
+
+   - if an expression is a lisp-macro,
+     then it will first expand its arguments
+     and then return the expansion of the parent
+     with the expansion of the arguments replaced.
+   - If an expression is a command, tex-macro
+     or an operator expression, then it will replace
+     the same expression just with the elements replaced
+     by their expansions.
+   - Otherwise, it should replace just the bare expression."
+  (cl-typecase expr
+    (listex:lisp-macro (let* ((args (mapcar #'listex:expand-lisp-macro
+                                            (cdr expr)))
+                              (name (car expr))
+                              (f (listex:lisp-macro-get-fun name)))
+                         (funcall f args)))
+    ;; expand the arguments
+    ((or listex:command
+         listex:operator
+         listex:macro) (let ((args (mapcar #'listex:expand-lisp-macro
+                                           (cdr expr)))
+                             (name (car expr)))
+         `(,name ,@args)))
+    (list (mapcar #'listex:expand-lisp-macro expr))
+    (otherwise expr)))
+
+(defmacro lt-macrolet (bindings &rest body)
+  (let ((letf-args (cl-loop for b in bindings
+                            collect (eval `(listex:lisp-macro-alist-pair
+                                            listex-lisp-macro-alist
+                                            ,@b)))))
+    `(cl-letf (,@letf-args)
+       (listex:expand-lisp-macro (progn ,@body)))))
 
 (provide 'listex)

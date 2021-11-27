@@ -1,10 +1,12 @@
 (defmacro assert-type (type &rest elements)
   `(dolist (expr ',elements)
-     (cl-assert (cl-typep expr ',type) nil "%s is not of type %s" expr ',type)))
+     (cl-assert (cl-typep expr ',type)
+                nil "%s is not of type %s" expr ',type)))
 
 (defmacro assert-type! (type &rest elements)
   `(dolist (expr ',elements)
-     (cl-assert (not (cl-typep expr ',type)) nil "%s is not of type %s" expr ',type)))
+     (cl-assert (not (cl-typep expr ',type))
+                nil "%s is not of type %s" expr ',type)))
 
 ;; keyword
 (assert-type listex:keyword /int /sum /alpha)
@@ -25,8 +27,16 @@
 
 ;; macro
 (assert-type listex:macro
+             (braced) (progn)
              (^) (^ A) (^ A B 2)
              (_) (_ A) (_ A B))
+
+;; newcmdlet simple test
+(newcmdlet ((not-a-tex-macro "not-a tex-macro"))
+  (assert-type listex:macro
+               (not-a-tex-macro)))
+(assert-type! listex:macro
+              (not-a-tex-macro))
 
 
 ;; rendering
@@ -44,3 +54,14 @@
    ("\\frac{A}{5}" . (-frac A 5))
    ("A % B % C" . (% A B C))
    ("A^{2}" . (^ A 2))))
+
+;; lt-macrolet examples
+
+
+
+(lt-macrolet ((Σ `(_ (^ (/sum /limits) ,(car args)) ,(cadr args)))
+              (ω `(5 6))
+              (λ `(-frac (-mathrm ,(car args))
+                         (-mathbf ,(car args)))))
+  '(λ (+ (Σ (ω) (ω))
+         (lrp (ω)))))
