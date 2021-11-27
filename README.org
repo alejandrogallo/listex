@@ -327,6 +327,10 @@ This package has the following concepts:
   (listex:render-tex expr))
 #+end_src
 
+* Epilog                                                           :noexport:
+#+begin_src emacs-lisp
+(provide 'listex)
+#+end_src
 * Examples
 :PROPERTIES:
 :header-args:listex: :exports both

@@ -211,3 +211,5 @@
 
 (defun listex (expr)
   (listex:render-tex expr))
+
+(provide 'listex)
