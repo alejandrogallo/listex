@@ -380,8 +380,7 @@ This example writes the cluster operator in coupled cluster theory
 as an example for managing align environments.
 
 #+begin_src listex :env al*
-(labels (
-         ;; mathematics and second quantization
+(labels (;; mathematics and second quantization
          (Σ (idx) `(_ (/sum /limits) ,idx))
          (t (up down) `(_ (^ t ,up) ,down))
          (a (i) `(_ (-hat a) ,i))
