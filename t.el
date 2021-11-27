@@ -30,7 +30,6 @@
              (braced) (progn)
              (^) (^ A) (^ A B 2)
              (_) (_ A) (_ A B))
-
 ;; newcmdlet simple test
 (newcmdlet ((not-a-tex-macro "not-a tex-macro"))
   (assert-type listex:macro
@@ -39,26 +38,54 @@
               (not-a-tex-macro))
 
 
+;; lisp-macros
+(assert-type listex:lisp-macro
+             (lrp))
+;; lt-macrolet
+(lt-macrolet ((λ '(this and that)))
+  (assert-type listex:lisp-macro
+               (λ)))
+(assert-type! listex:lisp-macro
+              (λ))
+
 ;; rendering
 (defun assert-render (alist)
   (dolist (c alist)
     (cl-destructuring-bind (str . expr) c
-      (cl-assert (string= str (listex:render-tex expr))))))
+      (let ((rendered (listex:render-tex expr)))
+        (cl-assert (string= str rendered)
+                   nil "expected: %s\nactual  : %s"
+                   str rendered)))))
 
 (assert-render
  '(("int" . (int))
    ("pretty raw" . (pretty raw))
    ("int" . int)
+
+   ;; keywords
    ("\\int" . /int)
    ("\\int x \\d" . (/int x /d))
+
+   ;; commands
    ("\\frac{A}{5}" . (-frac A 5))
+
+   ;; operators
    ("A % B % C" . (% A B C))
-   ("A^{2}" . (^ A 2))))
+   ("A + B + C" . (+ A B C))
+   ("A = B = C" . (= A B C))
+   ("A =& B =& C" . (%=& A B C))
+   ("A &+\\\\ B &+\\\\ C" . (%&+\\\\ A B C))
+
+   ;; tex macros
+   ("{raw}" . (braced raw))
+   ("raw" . (progn raw))
+   ("A^{2}" . (^ A 2))
+
+   ;; lisp macros
+   ("\\left(\\i\\right)" . (lrp /i))))
+
 
 ;; lt-macrolet examples
-
-
-
 (lt-macrolet ((Σ `(_ (^ (/sum /limits) ,(car args)) ,(cadr args)))
               (ω `(5 6))
               (λ `(-frac (-mathrm ,(car args))
