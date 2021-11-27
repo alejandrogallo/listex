@@ -507,8 +507,7 @@ as an example for managing align environments.
                      (list (when (> n 1) (list '-frac 1 pow))
                            (Σ `(,@abc ,@ijk))
                            (t abc ijk)
-                           (áa abc ijk))))
-         )
+                           (áa abc ijk)))))
   ;; this inserts a plus and & and \\ for the align environment
   (let ((+ '%\\\\&+))
 
@@ -521,6 +520,28 @@ as an example for managing align environments.
 :results:
 \begin{align*}
 \hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b i j} t^{a b}_{i j} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{8} \sum \limits_{a b c i j k} t^{a b c}_{i j k} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{16} \sum \limits_{a b c d i j k l} t^{a b c d}_{i j k l} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{32} \sum \limits_{a b c d e i j k l m} t^{a b c d e}_{i j k l m} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{64} \sum \limits_{a b c d e f i j k l m n} t^{a b c d e f}_{i j k l m n} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{128} \sum \limits_{a b c d e f g i j k l m n o} t^{a b c d e f g}_{i j k l m n o} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{256} \sum \limits_{a b c d e f g A i j k l m n o I} t^{a b c d e f g A}_{i j k l m n o I} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{512} \sum \limits_{a b c d e f g A B i j k l m n o I J} t^{a b c d e f g A B}_{i j k l m n o I J} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{1024} \sum \limits_{a b c d e f g A B C i j k l m n o I J K} t^{a b c d e f g A B C}_{i j k l m n o I J K} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{C}^{\dagger} \hat{a}_{K} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \cdots
+\end{align*}
+:end:
+
+and we can try the same this time using
+=lt-macrolet=
+
+#+begin_src listex :env al*
+(lt-macrolet ((T '(-hat T))
+              (&+ `(%\\\\&+ ,@args))
+              (τ '(progn
+                    (/sum))))
+  '(%&= (T)
+        (&+ (τ 1)
+            (τ 2)
+            (τ 3)
+            (τ 4))))
+#+end_src
+
+#+RESULTS:
+:results:
+\begin{align*}
+\hat{T} &= \sum \\&+ \sum \\&+ \sum \\&+ \sum
 \end{align*}
 :end:
 
