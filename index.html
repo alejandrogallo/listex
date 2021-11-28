@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-11-27 Sat 22:00 -->
+<!-- 2021-11-28 Sun 01:56 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LisTeX</title>
@@ -222,43 +222,43 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org3f3a570">1. Introduction</a>
+<li><a href="#org9902b0f">1. Introduction</a>
 <ul>
-<li><a href="#org332d73f">1.1. <span class="todo TODO">TODO</span> What is to be done</a></li>
+<li><a href="#org7a12b66">1.1. <span class="todo TODO">TODO</span> What is to be done</a></li>
 </ul>
 </li>
-<li><a href="#org905e6ea">2. org-src blocks</a></li>
-<li><a href="#org9b202be">3. Derived mode</a></li>
-<li><a href="#orgcc9c141">4. Main implementation</a></li>
-<li><a href="#orgbcddce5">5. Misc</a></li>
-<li><a href="#org8dbbdec">6. Types</a></li>
-<li><a href="#orgb1593d4">7. Macros definition</a>
+<li><a href="#org15cefc2">2. org-src blocks</a></li>
+<li><a href="#org3c06ae6">3. Derived mode</a></li>
+<li><a href="#org4f607e8">4. Main implementation</a></li>
+<li><a href="#orgbe948a4">5. Misc</a></li>
+<li><a href="#orgf15a1f7">6. Types</a></li>
+<li><a href="#org609e298">7. Macros definition</a>
 <ul>
-<li><a href="#org8c91aa9">7.1. Implementation</a></li>
-<li><a href="#org40fcfb9">7.2. TeX macro definitions</a></li>
+<li><a href="#org05ad691">7.1. Implementation</a></li>
+<li><a href="#org0ce2028">7.2. TeX macro definitions</a></li>
 </ul>
 </li>
-<li><a href="#org7e2486c">8. Render</a></li>
-<li><a href="#orgf47db37">9. Macrolet</a></li>
-<li><a href="#orgc97f96c">10. Examples</a>
+<li><a href="#orgb7e4b8e">8. Render</a></li>
+<li><a href="#orged66c3f">9. Macrolet</a></li>
+<li><a href="#org3b8367a">10. Examples</a>
 <ul>
-<li><a href="#org7eb3640">10.1. Some equations</a>
+<li><a href="#org64da202">10.1. Some equations</a>
 <ul>
-<li><a href="#orge73cc3d">10.1.1. Newton</a></li>
-<li><a href="#orgeea81b2">10.1.2. Coupled cluster</a></li>
+<li><a href="#orga85807c">10.1.1. Newton</a></li>
+<li><a href="#org2506077">10.1.2. Coupled cluster</a></li>
 </ul>
 </li>
-<li><a href="#org5ab8261">10.2. Latex document example</a></li>
-<li><a href="#orgf4f2c59">10.3. A matrix macro</a></li>
-<li><a href="#org4ff26a2">10.4. <span class="todo TODO">TODO</span> Newcmdlet</a></li>
+<li><a href="#orgdd073ed">10.2. Latex document example</a></li>
+<li><a href="#org1ca70ca">10.3. A matrix macro</a></li>
+<li><a href="#orga3f8855">10.4. <span class="todo TODO">TODO</span> Newcmdlet</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org3f3a570" class="outline-2">
-<h2 id="org3f3a570"><span class="section-number-2">1.</span> Introduction</h2>
+<div id="outline-container-org9902b0f" class="outline-2">
+<h2 id="org9902b0f"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This packages comes from the ocasional frustration of writing
@@ -278,8 +278,8 @@ You can see a rendered version of this document <a href="https://alejandrogallo.
 </p>
 </div>
 
-<div id="outline-container-org332d73f" class="outline-3">
-<h3 id="org332d73f"><span class="section-number-3">1.1.</span> <span class="todo TODO">TODO</span> What is to be done</h3>
+<div id="outline-container-org7a12b66" class="outline-3">
+<h3 id="org7a12b66"><span class="section-number-3">1.1.</span> <span class="todo TODO">TODO</span> What is to be done</h3>
 <div class="outline-text-3" id="text-1-1">
 <ul class="org-ul">
 <li>Some real world testing
@@ -295,8 +295,8 @@ ergonomic, but it might be wrong.</li>
 </div>
 </div>
 
-<div id="outline-container-org905e6ea" class="outline-2">
-<h2 id="org905e6ea"><span class="section-number-2">2.</span> org-src blocks</h2>
+<div id="outline-container-org15cefc2" class="outline-2">
+<h2 id="org15cefc2"><span class="section-number-2">2.</span> org-src blocks</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 In org mode we want to have easily accessible code blocks like
@@ -371,8 +371,8 @@ etc.</dd>
 </div>
 </div>
 
-<div id="outline-container-org9b202be" class="outline-2">
-<h2 id="org9b202be"><span class="section-number-2">3.</span> Derived mode</h2>
+<div id="outline-container-org3c06ae6" class="outline-2">
+<h2 id="org3c06ae6"><span class="section-number-2">3.</span> Derived mode</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 We define a derived mode based on the <code>emacs-lisp</code> mode
@@ -389,15 +389,15 @@ to make it easy to edit the s-expressions with your preferred bindings.
 </div>
 </div>
 
-<div id="outline-container-orgcc9c141" class="outline-2">
-<h2 id="orgcc9c141"><span class="section-number-2">4.</span> Main implementation</h2>
+<div id="outline-container-org4f607e8" class="outline-2">
+<h2 id="org4f607e8"><span class="section-number-2">4.</span> Main implementation</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 This package has the following concepts:
 </p>
 
 <dl class="org-dl">
-<dt><a href="#orgf45775e">command</a></dt><dd>This should be the equivalent to latex commands, i.e.,
+<dt><a href="#orgfdd2523">command</a></dt><dd>This should be the equivalent to latex commands, i.e.,
 if <code>cmd</code> is a latex command of 3 variables, then
 elisp:(cmd a b c d e) should be rendered as</dd>
 </dl>
@@ -430,7 +430,7 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </thead>
 <tbody>
 <tr>
-<td class="org-left">command <a id="orgf45775e"></a></td>
+<td class="org-left">command <a id="orgfdd2523"></a></td>
 <td class="org-left"><code>-</code></td>
 <td class="org-left">Latex commands</td>
 <td class="org-left"><code>(-cmd a b c d)</code></td>
@@ -439,7 +439,7 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </tr>
 
 <tr>
-<td class="org-left">keyword <a id="org12d54d1"></a></td>
+<td class="org-left">keyword <a id="org5898821"></a></td>
 <td class="org-left"><code>/</code></td>
 <td class="org-left">Single keywords</td>
 <td class="org-left"><code>(/cmd a b c d)</code></td>
@@ -448,7 +448,7 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </tr>
 
 <tr>
-<td class="org-left">operator <a id="orgd96927d"></a></td>
+<td class="org-left">operator <a id="org3c2c110"></a></td>
 <td class="org-left">&#xa0;</td>
 <td class="org-left">Infix inclusion</td>
 <td class="org-left"><code>(+ a b c)</code></td>
@@ -507,8 +507,8 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </div>
 
 
-<div id="outline-container-orgbcddce5" class="outline-2">
-<h2 id="orgbcddce5"><span class="section-number-2">5.</span> Misc</h2>
+<div id="outline-container-orgbe948a4" class="outline-2">
+<h2 id="orgbe948a4"><span class="section-number-2">5.</span> Misc</h2>
 <div class="outline-text-2" id="text-5">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-keyword-prefix</span> <span style="font-style: italic;">"/"</span>)
@@ -524,8 +524,8 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </div>
 </div>
 
-<div id="outline-container-org8dbbdec" class="outline-2">
-<h2 id="org8dbbdec"><span class="section-number-2">6.</span> Types</h2>
+<div id="outline-container-orgf15a1f7" class="outline-2">
+<h2 id="orgf15a1f7"><span class="section-number-2">6.</span> Types</h2>
 <div class="outline-text-2" id="text-6">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:keyword</span> ()
@@ -576,12 +576,12 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </div>
 </div>
 
-<div id="outline-container-orgb1593d4" class="outline-2">
-<h2 id="orgb1593d4"><span class="section-number-2">7.</span> Macros definition</h2>
+<div id="outline-container-org609e298" class="outline-2">
+<h2 id="org609e298"><span class="section-number-2">7.</span> Macros definition</h2>
 <div class="outline-text-2" id="text-7">
 </div>
-<div id="outline-container-org8c91aa9" class="outline-3">
-<h3 id="org8c91aa9"><span class="section-number-3">7.1.</span> Implementation</h3>
+<div id="outline-container-org05ad691" class="outline-3">
+<h3 id="org05ad691"><span class="section-number-3">7.1.</span> Implementation</h3>
 <div class="outline-text-3" id="text-7-1">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-tex-macro-alist</span> nil)
@@ -601,16 +601,17 @@ elisp:(cmd a b c d e) should be rendered as</dd>
                                   for a in !args
                                   collect `(listex:render-tex ,a))))))))
 
-(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:lisp-macro-alist-pair</span> (alist key list-or-fun)
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:lisp-macro-alist-pair</span> (alist key args list-or-fun)
   `(list '(alist-get ',key ,alist)
      ,(<span style="font-weight: bold;">cl-etypecase</span> list-or-fun
         (<span style="font-weight: bold;">function</span> list-or-fun)
-        (list `(<span style="font-weight: bold;">lambda</span> (args)
+        (list `(<span style="font-weight: bold;">lambda</span> ,args
                  ,list-or-fun)))))
 
-(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:defmacro</span> (key list-or-fun)
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:defmacro</span> (key !args list-or-fun)
   `(<span style="font-weight: bold;">let</span> ((args (listex:lisp-macro-alist-pair listex-lisp-macro-alist
                                              ,key
+                                             ,!args
                                              ,list-or-fun)))
      (eval `(<span style="font-weight: bold;">setf</span> ,@args))))
 
@@ -633,6 +634,7 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">set indentation for lt-macrolet and newcmdlet correctly</span>
 (<span style="font-weight: bold;">progn</span>
   (put 'lt-macrolet 'lisp-indent-function 'defun)
+  (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'newcmdlet 'lisp-indent-function 'defun))
 
 
@@ -641,8 +643,8 @@ elisp:(cmd a b c d e) should be rendered as</dd>
 </div>
 </div>
 
-<div id="outline-container-org40fcfb9" class="outline-3">
-<h3 id="org40fcfb9"><span class="section-number-3">7.2.</span> TeX macro definitions</h3>
+<div id="outline-container-org0ce2028" class="outline-3">
+<h3 id="org0ce2028"><span class="section-number-3">7.2.</span> TeX macro definitions</h3>
 <div class="outline-text-3" id="text-7-2">
 <p>
 This package defines some macros by default for use in the src code and
@@ -656,13 +658,13 @@ for ease of use for others.
 
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">left right stuff</span>
 (listex:newcmd lr <span style="font-style: italic;">"\\left%s%s\\right%s"</span> (car args) (cddr args) (cadr args))
-(listex:defmacro lrp `(lr \( \) ,@args))
-(listex:defmacro lrs `(lr \[ \] ,@args))
-(listex:defmacro set `(lr /{ /} ,@args))
+(listex:defmacro lrp (args) `(lr \( \) ,@args))
+(listex:defmacro lrs (args) `(lr \[ \] ,@args))
+(listex:defmacro set (args) `(lr /{ /} ,@args))
 
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">quantum mechanics</span>
-(listex:defmacro &lt;| `(lr /langle | ,@args))
-(listex:defmacro |&gt; `(lr | /rangle ,@args))
+(listex:defmacro &lt;| (args) `(lr /langle | ,@args))
+(listex:defmacro |&gt; (args) `(lr | /rangle ,@args))
 
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">exponents</span>
 (listex:newcmd ^ <span style="font-style: italic;">"%s^{%s}"</span> (car args) (cdr args))
@@ -680,15 +682,15 @@ for ease of use for others.
                (cdr args)
                (car args))
 
-(listex:defmacro mat `(env pmatrix ,@args))
+(listex:defmacro mat (args) `(env pmatrix ,@args))
 
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">Math environments</span>
-(listex:defmacro $ `(begend $ ,@args))
-(listex:defmacro $$ `(begend $$ ,@args))
-(listex:defmacro eq `(env equation ,@args))
-(listex:defmacro eq* `(env equation* ,@args))
-(listex:defmacro al `(env align ,@args))
-(listex:defmacro al* `(env align* ,@args))
+(listex:defmacro $ (args) `(begend $ ,@args))
+(listex:defmacro $$ (args) `(begend $$ ,@args))
+(listex:defmacro eq (args) `(env equation ,@args))
+(listex:defmacro eq* (args) `(env equation* ,@args))
+(listex:defmacro al (args) `(env align ,@args))
+(listex:defmacro al* (args) `(env align* ,@args))
 
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">force newlines in the output</span>
 (listex:newcmd terpri <span style="font-style: italic;">"\n"</span>)
@@ -697,6 +699,7 @@ for ease of use for others.
 
 <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">more convoluted example</span>
 (listex:defmacro matrix
+                 (args)
                  (<span style="font-weight: bold;">lambda</span> (args)
                    (<span style="font-weight: bold;">let</span> ((rows (car args))
                          (cols (cadr args))
@@ -720,8 +723,8 @@ for ease of use for others.
 </div>
 </div>
 
-<div id="outline-container-org7e2486c" class="outline-2">
-<h2 id="org7e2486c"><span class="section-number-2">8.</span> Render</h2>
+<div id="outline-container-orgb7e4b8e" class="outline-2">
+<h2 id="orgb7e4b8e"><span class="section-number-2">8.</span> Render</h2>
 <div class="outline-text-2" id="text-8">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">
@@ -756,7 +759,7 @@ for ease of use for others.
     (listex:lisp-macro (<span style="font-weight: bold;">let*</span> ((args (cdr expr))
                               (name (car expr))
                               (f (listex:lisp-macro-get-fun name))
-                              (new-expr (funcall f args)))
+                              (new-expr (apply f args)))
                          (listex:render-tex new-expr)))
     (list (string-join (mapcar #'listex:render-tex expr) <span style="font-style: italic;">" "</span>))
     (atom (format <span style="font-style: italic;">"%s"</span> expr))))
@@ -771,8 +774,8 @@ for ease of use for others.
 </div>
 </div>
 
-<div id="outline-container-orgf47db37" class="outline-2">
-<h2 id="orgf47db37"><span class="section-number-2">9.</span> Macrolet</h2>
+<div id="outline-container-orged66c3f" class="outline-2">
+<h2 id="orged66c3f"><span class="section-number-2">9.</span> Macrolet</h2>
 <div class="outline-text-2" id="text-9">
 <p>
 In order to have a macrolet-like behaviour we need
@@ -811,7 +814,7 @@ in the <code>listex:expand-lisp-macro</code> function.
                                             (cdr expr)))
                               (name (car expr))
                               (f (listex:lisp-macro-get-fun name)))
-                         (funcall f args)))
+                         (apply f args)))
     <span style="font-weight: bold; font-style: italic;">;; </span><span style="font-weight: bold; font-style: italic;">expand the arguments</span>
     ((<span style="font-weight: bold;">or</span> listex:command
          listex:operator
@@ -840,23 +843,31 @@ macro environment.
                                             ,@b)))))
     `(<span style="font-weight: bold;">cl-letf</span> (,@letf-args)
        (listex:expand-lisp-macro (<span style="font-weight: bold;">progn</span> ,@body)))))
+
+(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">lt-macrolet*</span> (bindings <span style="font-weight: bold; text-decoration: underline;">&amp;rest</span> body)
+  (<span style="font-weight: bold;">let</span> ((init `(<span style="font-weight: bold;">progn</span> ,@body)))
+    (<span style="font-weight: bold;">cl-loop</span> for b in (reverse bindings)
+           with result = init
+           do (<span style="font-weight: bold;">setq</span> result `(lt-macrolet (,b) ,result))
+           finally
+           return result)))
 </pre>
 </div>
 </div>
 </div>
 
 
-<div id="outline-container-orgc97f96c" class="outline-2">
-<h2 id="orgc97f96c"><span class="section-number-2">10.</span> Examples</h2>
+<div id="outline-container-org3b8367a" class="outline-2">
+<h2 id="org3b8367a"><span class="section-number-2">10.</span> Examples</h2>
 <div class="outline-text-2" id="text-10">
 </div>
 
-<div id="outline-container-org7eb3640" class="outline-3">
-<h3 id="org7eb3640"><span class="section-number-3">10.1.</span> Some equations</h3>
+<div id="outline-container-org64da202" class="outline-3">
+<h3 id="org64da202"><span class="section-number-3">10.1.</span> Some equations</h3>
 <div class="outline-text-3" id="text-10-1">
 </div>
-<div id="outline-container-orge73cc3d" class="outline-4">
-<h4 id="orge73cc3d"><span class="section-number-4">10.1.1.</span> Newton</h4>
+<div id="outline-container-orga85807c" class="outline-4">
+<h4 id="orga85807c"><span class="section-number-4">10.1.1.</span> Newton</h4>
 <div class="outline-text-4" id="text-10-1-1">
 <p>
 A simple equation will be
@@ -901,8 +912,8 @@ things:
 </div>
 </div>
 
-<div id="outline-container-orgeea81b2" class="outline-4">
-<h4 id="orgeea81b2"><span class="section-number-4">10.1.2.</span> Coupled cluster</h4>
+<div id="outline-container-org2506077" class="outline-4">
+<h4 id="org2506077"><span class="section-number-4">10.1.2.</span> Coupled cluster</h4>
 <div class="outline-text-4" id="text-10-1-2">
 <p>
 This example writes the cluster operator in coupled cluster theory
@@ -929,8 +940,7 @@ as an example for managing align environments.
 		     (list (when (&gt; n 1) (list '-frac 1 pow))
 			   (Σ `(,@abc ,@ijk))
 			   (t abc ijk)
-			   (áa abc ijk))))
-	 )
+			   (áa abc ijk)))))
   ;; this inserts a plus and &amp; and \\ for the align environment
   (let ((+ '%\\\\&amp;+))
 
@@ -943,14 +953,53 @@ as an example for managing align environments.
 \begin{align*}
 \hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b i j} t^{a b}_{i j} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{8} \sum \limits_{a b c i j k} t^{a b c}_{i j k} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{16} \sum \limits_{a b c d i j k l} t^{a b c d}_{i j k l} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{32} \sum \limits_{a b c d e i j k l m} t^{a b c d e}_{i j k l m} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{64} \sum \limits_{a b c d e f i j k l m n} t^{a b c d e f}_{i j k l m n} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{128} \sum \limits_{a b c d e f g i j k l m n o} t^{a b c d e f g}_{i j k l m n o} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{256} \sum \limits_{a b c d e f g A i j k l m n o I} t^{a b c d e f g A}_{i j k l m n o I} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{512} \sum \limits_{a b c d e f g A B i j k l m n o I J} t^{a b c d e f g A B}_{i j k l m n o I J} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{1024} \sum \limits_{a b c d e f g A B C i j k l m n o I J K} t^{a b c d e f g A B C}_{i j k l m n o I J K} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{d}^{\dagger} \hat{a}_{e}^{\dagger} \hat{a}_{f}^{\dagger} \hat{a}_{g}^{\dagger} \hat{a}_{A}^{\dagger} \hat{a}_{B}^{\dagger} \hat{a}_{C}^{\dagger} \hat{a}_{K} \hat{a}_{J} \hat{a}_{I} \hat{a}_{o} \hat{a}_{n} \hat{a}_{m} \hat{a}_{l} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i} \\&+ \cdots
 \end{align*}
+
+<p>
+and we can try the same this time using
+<code>lt-macrolet</code>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-listex">(labels ((ps (n) (seq-take '(a b c d e f g A B C D E F G) n))
+	 (hs (n) (seq-take '(i j k l m n o I J K L M N O) n)))
+
+  (lt-macrolet* ((&amp;+ (&amp;rest args) `(%\\\\&amp;+ ,@args))
+		 (t (up down) `(_ (^ t ,up) ,down))
+		 (^a (i) `(_ (-hat a) ,i))
+		 (^á (i) `(^ (^a ,i) /dagger))
+		 ;; holes and particles
+		 (áa (up down) `(,(cl-loop for p in up collect `(^á ,p))
+				 ,(cl-loop for p in down collect `(^a ,p))))
+
+
+		 (Σ (&amp;rest idx) `(_ (/sum /limits) ,@idx))
+
+		 (τ (n) (let ((pow (math-power-of-2 n))
+			      (abc (ps n))
+			      (ijk (reverse (hs n))))
+			  `(,(when (&gt; n 1) `(-frac 1 ,pow))
+			    (Σ ,abc ,ijk)
+			    (t ,abc ,ijk)
+			    (áa ,abc ,ijk)))))
+
+    '(%&amp;= (-hat T)
+	  (&amp;+ (τ 1)
+	      (τ 2)))))
+
+</pre>
+</div>
+
+\begin{align*}
+\hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b j i} t^{a b}_{j i} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i}
+\end{align*}
 </div>
 </div>
 </div>
 
 
 
-<div id="outline-container-org5ab8261" class="outline-3">
-<h3 id="org5ab8261"><span class="section-number-3">10.2.</span> Latex document example</h3>
+<div id="outline-container-orgdd073ed" class="outline-3">
+<h3 id="orgdd073ed"><span class="section-number-3">10.2.</span> Latex document example</h3>
 <div class="outline-text-3" id="text-10-2">
 <p>
 Even though <code>listex</code> is really thought for typesetting of formulas,
@@ -988,8 +1037,8 @@ whole latex documents using s-expressions.
 </div>
 </div>
 
-<div id="outline-container-orgf4f2c59" class="outline-3">
-<h3 id="orgf4f2c59"><span class="section-number-3">10.3.</span> A matrix macro</h3>
+<div id="outline-container-org1ca70ca" class="outline-3">
+<h3 id="org1ca70ca"><span class="section-number-3">10.3.</span> A matrix macro</h3>
 <div class="outline-text-3" id="text-10-3">
 <p>
 This is a simple but useful macro defined in the macro section:
@@ -1042,8 +1091,8 @@ That's not bad at all.
 </div>
 
 
-<div id="outline-container-org4ff26a2" class="outline-3">
-<h3 id="org4ff26a2"><span class="section-number-3">10.4.</span> <span class="todo TODO">TODO</span> Newcmdlet</h3>
+<div id="outline-container-orga3f8855" class="outline-3">
+<h3 id="orga3f8855"><span class="section-number-3">10.4.</span> <span class="todo TODO">TODO</span> Newcmdlet</h3>
 <div class="outline-text-3" id="text-10-4">
 <p>
 There should be an easy way of defining lexically macros,
@@ -1072,7 +1121,7 @@ to have to call <code>listex</code> before the command.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Alejandro Gallo</p>
-<p class="date">Created: 2021-11-27 Sat 22:00</p>
+<p class="date">Created: 2021-11-28 Sun 01:56</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
