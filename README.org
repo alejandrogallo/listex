@@ -754,23 +754,37 @@ This is a partial implementation of
       (* Über das Gravitationsfeld eines Massenpunktes nach der
          Einsteinschen Theorie.)
 
-      (text "Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des
-             Merkur (s. Sitzungsberichte vom 18. November 1915) folgendes
-             Problem gestellt:"
+      (text Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des
+            Merkur "(s. Sitzungsberichte vom 18. November 1915)" folgendes
+            Problem gestellt:
 
-            ~%
+            =nl=
 
             Ein Punkt bewege sich gemäß der Forderung
 
             (eq (-label eq:main-metric-definition)
                 (lr /{ \.
                     (env matrix
-                         (δ /int (d! s))
+                         (= (δ /int (d! s))
+                            0)
                          =nl= =nl=
                          (= (d! s)
                             (-sqrt (/sum gμν
                                          (d! (_ x μ))
-                                         (d! (_ x ν)))))))))
+                                         (d! (_ x ν))))))))
+
+            wobeit ($ gμν) Funktionen der Variabeln ($ x) bedeuten und bei
+            der Variation am Anfang und Ende des Integrationswegs die
+            Variablen ($ x) festzuhalten sind. Der Punkt
+            bewege sich "also," kurz "gesagt," auf einer geodätischen Linie in
+            der durch das Linienelement ($ (d! s)) charakterisierten
+            Mannigfaltigkeit.
+
+            =nl=
+
+            Die Ausführung der Variation ergibt die Bewegungsgleichungen des
+            Punktes)
+
       )
     ))
 
@@ -782,12 +796,16 @@ This is a partial implementation of
 \section{ Über das Gravitationsfeld eines Massenpunktes nach der Einsteinschen Theorie. } 
 
  Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des Merkur
-             (s. Sitzungsberichte vom 18. November 1915) folgendes Problem
-             gestellt: Ein Punkt bewege sich gemäß der Forderung
-             \begin{equation} \label{eq:main-metric-definition}
-             \left\{\begin{matrix} \delta \int \mathrm{d} s \\ \\ \mathrm{d} s =
-             \sqrt{\sum g_{\mu \nu} \mathrm{d} x_{\mu} \mathrm{d} x_{\nu}}
-             \end{matrix}\right.  \end{equation}
+(s. Sitzungsberichte vom 18. November 1915) folgendes Problem gestellt: \\ Ein
+Punkt bewege sich gemäß der Forderung \begin{equation}
+\label{eq:main-metric-definition} \left\{\begin{matrix} \delta \int \mathrm{d} s
+= 0 \\ \\ \mathrm{d} s = \sqrt{\sum g_{\mu \nu} \mathrm{d} x_{\mu} \mathrm{d}
+x_{\nu}} \end{matrix}\right.  \end{equation} wobeit $g_{\mu \nu}$ Funktionen der
+Variabeln $x$ bedeuten und bei der Variation am Anfang und Ende des
+Integrationswegs die Variablen $x$ festzuhalten sind. Der Punkt bewege sich
+also, kurz gesagt, auf einer geodätischen Linie in der durch das Linienelement
+$\mathrm{d} s$ charakterisierten Mannigfaltigkeit. \\ Die Ausführung der
+Variation ergibt die Bewegungsgleichungen des Punktes
 \end{document}
 :end:
 
