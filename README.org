@@ -42,13 +42,18 @@ This package has the following concepts:
   ='(-frac A B C D)= is allowed and gets rendered as
   =\frac{A}{B}{C}{D}=.
 - [[keyword][keyword]] ::
-  This is the counterpart to [[command]], i.e. just latex keywords.
+  This is the counterpart to [[command][command]], i.e. just latex keywords.
   This can be at the beginning of the list of in the middle,
   and gets introduced by the prefix =/=.
   For instance,
   - ='(/frac /alpha 2)= ⇒ =\frac \alpha 2=
   - ='(-frac /alpha 2)= ⇒ =\frac{\alpha}{2}=
-- [[operator]] ::
+- [[operator][operator]] :: TODO
+- lisp-macro :: TODO
+- tex-macro :: TODO
+- alias :: TODO
+- atom :: TODO
+- list :: TODO
   
 
 
