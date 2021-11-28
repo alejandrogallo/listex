@@ -41,12 +41,51 @@
 ;; lisp-macros
 (assert-type listex:lisp-macro
              (lrp))
-;; lt-macrolet
-(lt-macrolet ((λ () '(this and that)))
-  (assert-type listex:lisp-macro
-               (λ)))
-(assert-type! listex:lisp-macro
-              (λ))
+
+
+(put 'assert-replacements 'lisp-indent-function 4)
+(defmacro assert-replacements (letconstruct
+                               type
+                               binding-extractor
+                               bindings
+                               &rest replacements)
+  `(progn
+     ;; first of al make sure that the bindings are not in the binding space
+     (assert-type! ,type ,@(mapcar binding-extractor bindings))
+     ;; go throught the replacements alist
+     ,@(cl-loop for r in replacements
+                collect
+                ;; make an assertment of the structure that comes
+                ;; of of the replacement
+                `(let ((should ',(cdr r))
+                       (is (,letconstruct ,bindings
+                                            ;; assert the types that are now
+                                            ;; in the bindings
+                                            (assert-type ,type
+                                                         ,@(mapcar
+                                                            binding-extractor
+                                                            bindings))
+                                            ',(car r))))
+                   (cl-assert (equal should is)
+                              nil "expected: %s\nactual  : %s"
+                              should is)))
+     ;; make sure that no bindings leaked after the letconstruct
+     (assert-type! ,type ,@(mapcar binding-extractor bindings))))
+
+;; alias
+(assert-replacements lt-aliaslet listex:alias car
+                     ((λ '/lambda)
+                      (β '/beta))
+  ((λ a) . (/lambda a))
+  ((λ (λ (λ (β)))) . (/lambda (/lambda (/lambda (/beta))))))
+
+;; lt-macrolet test
+(assert-replacements lt-macrolet listex:lisp-macro (lambda (x) (list (car x)))
+                     ((λ () '(this and that))
+                      (ι (n) `(+ ,@(cl-loop for i from 1 to n collect i))))
+  ((λ) . (this and that))
+  ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1))))
+
 
 ;; rendering
 (defun assert-render (alist)

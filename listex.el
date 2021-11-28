@@ -80,9 +80,19 @@
   `(alist-get ,name listex-lisp-macro-alist))
 
 (cl-deftype listex:lisp-macro ()
-  `(and list
+  '(and list
         listex:car-is-atom
-        (satisfies ,(lambda (expr) (listex:lisp-macro-get-fun (car expr))))))
+        (satisfies (lambda (expr) (listex:lisp-macro-get-fun (car expr))))))
+
+(defvar listex-alias-alist nil
+  "Alist holding all the aliases.")
+
+(defmacro listex:get-alias (name)
+  `(alist-get ,name listex-alias-alist))
+
+(cl-deftype listex:alias ()
+  '(and symbol
+        (satisfies (lambda (expr) (listex:get-alias expr)))))
 
 (defvar listex-tex-macro-alist nil)
 (defvar listex-lisp-macro-alist nil)
@@ -209,6 +219,9 @@
                               (f (listex:lisp-macro-get-fun name))
                               (new-expr (apply f args)))
                          (listex:render-tex new-expr)))
+    (listex:alias (let* ((name expr)
+                         (replacement (listex:get-alias name)))
+                    (listex:render-tex replacement)))
     (listex:keyword (format "\\%s"
                             (string-remove-prefix listex-keyword-prefix
                                                   (symbol-name expr))))
@@ -264,6 +277,7 @@
                               (name (car expr))
                               (f (listex:lisp-macro-get-fun name)))
                          (apply f args)))
+    (listex:alias (listex:get-alias expr))
     ;; expand the arguments
     ((or listex:command
          listex:operator
@@ -274,13 +288,35 @@
     (list (mapcar #'listex:expand-lisp-macro expr))
     (otherwise expr)))
 
-(defmacro lt-macrolet (bindings &rest body)
+(defmacro listex:letconstruct (before-progn-fn
+                               pair-constructor
+                               alist bindings
+                               &rest body)
   (let ((letf-args (cl-loop for b in bindings
-                            collect (eval `(listex:lisp-macro-alist-pair
-                                            listex-lisp-macro-alist
+                            collect (eval `(,pair-constructor
+                                            ,alist
                                             ,@b)))))
     `(cl-letf (,@letf-args)
-       (listex:expand-lisp-macro (progn ,@body)))))
+       (,before-progn-fn (progn ,@body)))))
+
+(defmacro listex:alias-alist-pair (alist key replacement)
+  `(list '(alist-get ',key ,alist)
+     ,(cl-etypecase replacement
+        ((or atom cons) `',replacement))))
+
+(defmacro lt-aliaslet (bindings &rest body)
+  `(listex:letconstruct listex:expand-lisp-macro
+                        listex:alias-alist-pair
+                        listex-alias-alist
+                        ,bindings
+                        ,@body))
+
+(defmacro lt-macrolet (bindings &rest body)
+  `(listex:letconstruct listex:expand-lisp-macro
+                        listex:lisp-macro-alist-pair
+                        listex-lisp-macro-alist
+                        ,bindings
+                        ,@body))
 
 (defmacro lt-macrolet* (bindings &rest body)
   (let ((init `(progn ,@body)))

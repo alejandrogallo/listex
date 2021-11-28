@@ -144,7 +144,6 @@ This package has the following concepts:
 
 * Types
 
-
 #+begin_src emacs-lisp
 (cl-deftype listex:keyword ()
   '(and symbol
@@ -186,9 +185,19 @@ This package has the following concepts:
   `(alist-get ,name listex-lisp-macro-alist))
 
 (cl-deftype listex:lisp-macro ()
-  `(and list
+  '(and list
         listex:car-is-atom
-        (satisfies ,(lambda (expr) (listex:lisp-macro-get-fun (car expr))))))
+        (satisfies (lambda (expr) (listex:lisp-macro-get-fun (car expr))))))
+
+(defvar listex-alias-alist nil
+  "Alist holding all the aliases.")
+
+(defmacro listex:get-alias (name)
+  `(alist-get ,name listex-alias-alist))
+
+(cl-deftype listex:alias ()
+  '(and symbol
+        (satisfies (lambda (expr) (listex:get-alias expr)))))
 #+end_src
 
 * Macros definition
@@ -334,6 +343,9 @@ for ease of use for others.
                               (f (listex:lisp-macro-get-fun name))
                               (new-expr (apply f args)))
                          (listex:render-tex new-expr)))
+    (listex:alias (let* ((name expr)
+                         (replacement (listex:get-alias name)))
+                    (listex:render-tex replacement)))
     (listex:keyword (format "\\%s"
                             (string-remove-prefix listex-keyword-prefix
                                                   (symbol-name expr))))
@@ -404,6 +416,7 @@ in the =listex:expand-lisp-macro= function.
                               (name (car expr))
                               (f (listex:lisp-macro-get-fun name)))
                          (apply f args)))
+    (listex:alias (listex:get-alias expr))
     ;; expand the arguments
     ((or listex:command
          listex:operator
@@ -422,13 +435,35 @@ to define globally the macros and pollute the listex
 macro environment.
 
 #+begin_src emacs-lisp
-(defmacro lt-macrolet (bindings &rest body)
+(defmacro listex:letconstruct (before-progn-fn
+                               pair-constructor
+                               alist bindings
+                               &rest body)
   (let ((letf-args (cl-loop for b in bindings
-                            collect (eval `(listex:lisp-macro-alist-pair
-                                            listex-lisp-macro-alist
+                            collect (eval `(,pair-constructor
+                                            ,alist
                                             ,@b)))))
     `(cl-letf (,@letf-args)
-       (listex:expand-lisp-macro (progn ,@body)))))
+       (,before-progn-fn (progn ,@body)))))
+
+(defmacro listex:alias-alist-pair (alist key replacement)
+  `(list '(alist-get ',key ,alist)
+     ,(cl-etypecase replacement
+        ((or atom cons) `',replacement))))
+
+(defmacro lt-aliaslet (bindings &rest body)
+  `(listex:letconstruct listex:expand-lisp-macro
+                        listex:alias-alist-pair
+                        listex-alias-alist
+                        ,bindings
+                        ,@body))
+
+(defmacro lt-macrolet (bindings &rest body)
+  `(listex:letconstruct listex:expand-lisp-macro
+                        listex:lisp-macro-alist-pair
+                        listex-lisp-macro-alist
+                        ,bindings
+                        ,@body))
 
 (defmacro lt-macrolet* (bindings &rest body)
   (let ((init `(progn ,@body)))
@@ -794,12 +829,51 @@ This is a partial implementation of
 ;; lisp-macros
 (assert-type listex:lisp-macro
              (lrp))
-;; lt-macrolet
-(lt-macrolet ((λ () '(this and that)))
-  (assert-type listex:lisp-macro
-               (λ)))
-(assert-type! listex:lisp-macro
-              (λ))
+
+
+(put 'assert-replacements 'lisp-indent-function 4)
+(defmacro assert-replacements (letconstruct
+                               type
+                               binding-extractor
+                               bindings
+                               &rest replacements)
+  `(progn
+     ;; first of al make sure that the bindings are not in the binding space
+     (assert-type! ,type ,@(mapcar binding-extractor bindings))
+     ;; go throught the replacements alist
+     ,@(cl-loop for r in replacements
+                collect
+                ;; make an assertment of the structure that comes
+                ;; of of the replacement
+                `(let ((should ',(cdr r))
+                       (is (,letconstruct ,bindings
+                                            ;; assert the types that are now
+                                            ;; in the bindings
+                                            (assert-type ,type
+                                                         ,@(mapcar
+                                                            binding-extractor
+                                                            bindings))
+                                            ',(car r))))
+                   (cl-assert (equal should is)
+                              nil "expected: %s\nactual  : %s"
+                              should is)))
+     ;; make sure that no bindings leaked after the letconstruct
+     (assert-type! ,type ,@(mapcar binding-extractor bindings))))
+
+;; alias
+(assert-replacements lt-aliaslet listex:alias car
+                     ((λ '/lambda)
+                      (β '/beta))
+  ((λ a) . (/lambda a))
+  ((λ (λ (λ (β)))) . (/lambda (/lambda (/lambda (/beta))))))
+
+;; lt-macrolet test
+(assert-replacements lt-macrolet listex:lisp-macro (lambda (x) (list (car x)))
+                     ((λ () '(this and that))
+                      (ι (n) `(+ ,@(cl-loop for i from 1 to n collect i))))
+  ((λ) . (this and that))
+  ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1))))
+
 
 ;; rendering
 (defun assert-render (alist)
