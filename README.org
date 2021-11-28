@@ -17,13 +17,67 @@ If you want to contribute please consider writing in the style of the document.
 
 You can see a rendered version of this document [[https://alejandrogallo.github.io/listex][here]].
 
-** TODO What is to be done
+** TODO Philosophy
+
+This package should be as simple as possible while
+providing good ergonomics (at least for me).
+
+So, the main idea is that the user must provide
+just a list that will be converted to a latex string
+through the =listex= function.
+
+This means, only a list is given and every component of the list
+can be different kind of types recognized by the
+[[Types]] section.
+
+This package has the following concepts:
+
+- [[command][command]] ::
+  This should be the equivalent to latex commands, i.e.,
+  a latex symbol and some braces expressions denoting arguments,
+  for instance =\frac{A}{B}= rather than =\frac A B=.
+  In our DSL, this is denoted by a =-= prefix, i.e. this frac would be
+  ='(-frac A B)=. Be aware that listex has no sense of the
+  latex information for the =frac= command, i.e.
+  ='(-frac A B C D)= is allowed and gets rendered as
+  =\frac{A}{B}{C}{D}=.
+- [[keyword][keyword]] ::
+  This is the counterpart to [[command]], i.e. just latex keywords.
+  This can be at the beginning of the list of in the middle,
+  and gets introduced by the prefix =/=.
+  For instance,
+  - ='(/frac /alpha 2)= ⇒ =\frac \alpha 2=
+  - ='(-frac /alpha 2)= ⇒ =\frac{\alpha}{2}=
+- [[operator]] ::
+  
+
+
+#+caption: Summary of the different types of commands existing in =listex=
+| name                  | prefix | what                                | lisp             | tex                | Rule                            |
+|-----------------------+--------+-------------------------------------+------------------+--------------------+---------------------------------|
+| command <<command>>   | =-=    | Latex commands                      | =(-cmd a b c d)= | =\cmd{a}{b}{c}{d}= | by prefix                       |
+| keyword <<keyword>>   | =/=    | Single keywords                     | =(/cmd a b c d)= | =\cmd a b c d=     | by prefix                       |
+| operator <<operator>> |        | Infix inclusion                     | =(+ a b c)=      | =a + b + c=        | is in =listex-operator-list=    |
+|                       | =%=    |                                     | =(%\\times A B)= | =A \times B=       | by prefix                       |
+| lisp-macro            |        | Function returning a symbol or list |                  |                    | is in =listex-lisp-macro-alist= |
+| tex-macro             |        | Function returning a string         | =(^ a b)=        | =a^{b}=            | in in =listex-tex-macro-alist=  |
+| alias                 |        | Simple symbol replacement           | =λ=              | =\lambda=          | is in =listex-alias-alist=      |
+|-----------------------+--------+-------------------------------------+------------------+--------------------+---------------------------------|
+| atom                  |        | Convert whatever to string          | =int=            | =int=              |                                 |
+|                       |        |                                     | =[a=5, b]=       | =[a=5, b]=         |                                 |
+|                       |        |                                     | ="a ()\sum"=     | =a ()\sum=         |                                 |
+| list                  |        | Join elements by space              | =(a b)=          | =a b=              |                                 |
+|-----------------------+--------+-------------------------------------+------------------+--------------------+---------------------------------|
+
+
+
+
+** What is to be done
 
 - Some real world testing
   - to find bugs
   - to finalize the DSL, right now I think it's quite
     ergonomic, but it might be wrong.
-- Maybe a better way to generate macros
 - Think about which rules to implement for the latex indentation.
 
 * Prolog                                                           :noexport:
@@ -107,28 +161,6 @@ to make it easy to edit the s-expressions with your preferred bindings.
   "Major mode for listex.
 \\{listex-mode-map}")
 #+end_src
-
-* Main implementation
-
-This package has the following concepts:
-
-- [[command][command]] ::
-  This should be the equivalent to latex commands, i.e.,
-  if =cmd= is a latex command of 3 variables, then
-  elisp:(cmd a b c d e) should be rendered as
-
-| name                  | prefix | what                             | lisp             | tex                | Rule                           |
-|-----------------------+--------+----------------------------------+------------------+--------------------+--------------------------------|
-| command <<command>>   | =-=    | Latex commands                   | =(-cmd a b c d)= | =\cmd{a}{b}{c}{d}= | by prefix                      |
-| keyword <<keyword>>   | =/=    | Single keywords                  | =(/cmd a b c d)= | =\cmd a b c d=     | by prefix                      |
-| operator <<operator>> |        | Infix inclusion                  | =(+ a b c)=      | =a + b + c=        | =listex-operator-list=         |
-| tex-macro             |        | Macro returning a string         | =(^ a b)=        | =a^{b}=            | =listex-tex-macro-alias-alist= |
-| atom                  |        | Convert whatever to string       | =int=            | =int=              |                                |
-| list                  |        | Join elements by space           | =(a b)=          | =a b=              |                                |
-| vector                |        | Will be copied as is             | =[a=5, b]=       | =[a=5, b]=         |                                |
-|-----------------------+--------+----------------------------------+------------------+--------------------+--------------------------------|
-| lisp-macro (TODO)   |        | Macro returning a symbol or list |                  |                    | =listex-lisp-macro-alist=      |
-
 
 * Misc
 #+begin_src emacs-lisp
