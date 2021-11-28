@@ -143,13 +143,13 @@
 
 ;; left right stuff
 (listex:newcmd lr "\\left%s%s\\right%s" (car args) (cddr args) (cadr args))
-(listex:defmacro lrp (args) `(lr \( \) ,@args))
-(listex:defmacro lrs (args) `(lr \[ \] ,@args))
-(listex:defmacro set (args) `(lr /{ /} ,@args))
+(listex:defmacro lrp (&rest args) `(lr \( \) ,@args))
+(listex:defmacro lrs (&rest args) `(lr \[ \] ,@args))
+(listex:defmacro set (&rest args) `(lr /{ /} ,@args))
 
 ;; quantum mechanics
-(listex:defmacro <| (args) `(lr /langle | ,@args))
-(listex:defmacro |> (args) `(lr | /rangle ,@args))
+(listex:defmacro <| (&rest args) `(lr /langle | ,@args))
+(listex:defmacro |> (&rest args) `(lr | /rangle ,@args))
 
 ;; exponents
 (listex:newcmd ^ "%s^{%s}" (car args) (cdr args))
@@ -167,15 +167,15 @@
                (cdr args)
                (car args))
 
-(listex:defmacro mat (args) `(env pmatrix ,@args))
+(listex:defmacro mat (&rest args) `(env pmatrix ,@args))
 
 ;; Math environments
-(listex:defmacro $ (args) `(begend $ ,@args))
-(listex:defmacro $$ (args) `(begend $$ ,@args))
-(listex:defmacro eq (args) `(env equation ,@args))
-(listex:defmacro eq* (args) `(env equation* ,@args))
-(listex:defmacro al (args) `(env align ,@args))
-(listex:defmacro al* (args) `(env align* ,@args))
+(listex:defmacro $ (&rest args) `(begend $ ,@args))
+(listex:defmacro $$ (&rest args) `(begend $$ ,@args))
+(listex:defmacro eq (&rest args) `(env equation ,@args))
+(listex:defmacro eq* (&rest args) `(env equation* ,@args))
+(listex:defmacro al (&rest args) `(env align ,@args))
+(listex:defmacro al* (&rest args) `(env align* ,@args))
 
 ;; force newlines in the output
 (listex:newcmd terpri "\n")
@@ -184,29 +184,31 @@
 
 ;; more convoluted example
 (listex:defmacro matrix
-                 (args)
-                 (lambda (args)
-                   (let ((rows (car args))
-                         (cols (cadr args))
-                         (elements (cddr args)))
-                     (cl-assert (eq (length elements) (* cols rows)))
-                     `(env pmatrix
-                           ,@(cl-loop for el in elements
-                                      with i = 0
-                                      with buff = nil
-                                      do (push el buff)
-                                      do (incf i)
-                                      if (eq (% i cols) 0)
-                                      do (push '\\\\ buff)
-                                      and collect (reverse buff)
-                                      and do (setf buff nil)
-                                      else
-                                      do (push '& buff))))))
+                 (rows cols &rest elements)
+                 (progn
+                   (cl-assert (eq (length elements) (* cols rows)))
+                   `(env pmatrix
+                         ,@(cl-loop for el in elements
+                                    with i = 0
+                                    with buff = nil
+                                    do (push el buff)
+                                    do (incf i)
+                                    if (eq (% i cols) 0)
+                                    do (push '\\\\ buff)
+                                    and collect (reverse buff)
+                                    and do (setf buff nil)
+                                    else
+                                    do (push '& buff)))))
 
 (defun listex:render-tex (expr)
   "Main function to convert a listex DSL s-expression
    into a latex-compatible string."
   (cl-etypecase expr
+    (listex:lisp-macro (let* ((args (cdr expr))
+                              (name (car expr))
+                              (f (listex:lisp-macro-get-fun name))
+                              (new-expr (apply f args)))
+                         (listex:render-tex new-expr)))
     (listex:keyword (format "\\%s"
                             (string-remove-prefix listex-keyword-prefix
                                                   (symbol-name expr))))
@@ -216,7 +218,7 @@
                                         (otherwise `(braced ,e))))
                           (cdr expr)))
             (name (format "\\%s" (string-remove-prefix listex-command-prefix
-                                                      (symbol-name (car expr)))))
+                                                       (symbol-name (car expr)))))
             (args-strings (mapcar #'listex:render-tex args)))
        (concat name (string-join args-strings))))
     (listex:operator (let* ((name (car expr))
@@ -225,17 +227,12 @@
                                     (string-remove-prefix listex-operator-prefix
                                                           namestr)
                                   namestr)))
-                      (string-join (mapcar #'listex:render-tex (cdr expr))
-                                   (format " %s " op))))
+                       (string-join (mapcar #'listex:render-tex (cdr expr))
+                                    (format " %s " op))))
     (listex:macro (let* ((args (cdr expr))
                          (name (car expr))
                          (f (listex:macro-get-fun name)))
                     (funcall f args)))
-    (listex:lisp-macro (let* ((args (cdr expr))
-                              (name (car expr))
-                              (f (listex:lisp-macro-get-fun name))
-                              (new-expr (apply f args)))
-                         (listex:render-tex new-expr)))
     (list (string-join (mapcar #'listex:render-tex expr) " "))
     (atom (format "%s" expr))))
 
