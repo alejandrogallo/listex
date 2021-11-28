@@ -667,11 +667,13 @@ whole latex documents using s-expressions.
 This is a simple but useful macro defined in the macro section:
 
 #+begin_src listex :env $$ :lisp-label weird-matrix
-'(matrix 2 3
+(lt-aliaslet ((φ '/phi)
+              († '/dagger))
+  '(matrix 2 3
          (-hat A) B (-dot E)
          (-tilde (-hat C)) D (_ E (matrix 2 2
-                                          1 (^ (-hat /phi) /dagger)
-                                          3 4)))
+                                          1 (^ (-hat φ) †)
+                                          3 4))))
 #+end_src
 
 #+RESULTS:
@@ -780,11 +782,12 @@ This is a partial implementation of
 \section{ Über das Gravitationsfeld eines Massenpunktes nach der Einsteinschen Theorie. } 
 
  Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des Merkur
-           (s. Sitzungsberichte vom 18. November 1915) folgendes Problem
-           gestellt: Ein Punkt bewege sich gemäß der Forderung \begin{equation}
-           \label{eq:main-metric-definition} \left\{\begin{matrix} \delta \int
-           \mathrm{d} s \\ \\ \mathrm{d} s = \sqrt{\sum g_{\mu \nu} \mathrm{d}
-           x_{\mu} \mathrm{d} x_{\nu}} \end{matrix}\right.  \end{equation}
+             (s. Sitzungsberichte vom 18. November 1915) folgendes Problem
+             gestellt: Ein Punkt bewege sich gemäß der Forderung
+             \begin{equation} \label{eq:main-metric-definition}
+             \left\{\begin{matrix} \delta \int \mathrm{d} s \\ \\ \mathrm{d} s =
+             \sqrt{\sum g_{\mu \nu} \mathrm{d} x_{\mu} \mathrm{d} x_{\nu}}
+             \end{matrix}\right.  \end{equation}
 \end{document}
 :end:
 
