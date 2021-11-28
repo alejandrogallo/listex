@@ -748,6 +748,8 @@ This is a partial implementation of
                 (* (&rest title) `("\\section{" ,@title "}" "\n\n"))
                 (** (&rest title) `("\\subsection{" ,@title "}" "\n\n"))
                 (*** (&rest title) `("\\ssubsection{" ,@title "}" "\n\n"))
+                (eqlab (label &rest args) `(eq (-label ,label)
+                                               ,@args))
 
                 (d! (var) `(progn (-mathrm d) ,var)))
     '(main
@@ -762,16 +764,16 @@ This is a partial implementation of
 
             Ein Punkt bewege sich gemäß der Forderung
 
-            (eq (-label eq:main-metric-definition)
-                (lr /{ \.
-                    (env matrix
-                         (= (δ /int (d! s))
-                            0)
-                         =nl= =nl=
-                         (= (d! s)
-                            (-sqrt (/sum gμν
-                                         (d! (_ x μ))
-                                         (d! (_ x ν))))))))
+            (eqlab eq:main-metric-definition
+                   (lr /{ \.
+                       (env matrix
+                            (= (δ /int (d! s))
+                               0)
+                            =nl= =nl=
+                            (= (d! s)
+                               (-sqrt (/sum gμν
+                                            (d! (_ x μ))
+                                            (d! (_ x ν))))))))
 
             wobeit ($ gμν) Funktionen der Variabeln ($ x) bedeuten und bei
             der Variation am Anfang und Ende des Integrationswegs die
@@ -785,8 +787,8 @@ This is a partial implementation of
             Die Ausführung der Variation ergibt die Bewegungsgleichungen des
             Punktes)
 
-      )
-    ))
+      =nl=
+      To be continued...)))
 
 #+end_src
 
@@ -805,7 +807,7 @@ Variabeln $x$ bedeuten und bei der Variation am Anfang und Ende des
 Integrationswegs die Variablen $x$ festzuhalten sind. Der Punkt bewege sich
 also, kurz gesagt, auf einer geodätischen Linie in der durch das Linienelement
 $\mathrm{d} s$ charakterisierten Mannigfaltigkeit. \\ Die Ausführung der
-Variation ergibt die Bewegungsgleichungen des Punktes
+Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 \end{document}
 :end:
 
