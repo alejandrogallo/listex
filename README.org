@@ -253,6 +253,7 @@ This package has the following concepts:
 
 ;; set indentation for lt-macrolet and newcmdlet correctly
 (progn
+  (put 'lt-aliaslet 'lisp-indent-function 'defun)
   (put 'lt-macrolet 'lisp-indent-function 'defun)
   (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'newcmdlet 'lisp-indent-function 'defun))
@@ -732,38 +733,44 @@ This is a partial implementation of
 [[https://de.wikisource.org/wiki/%C3%9Cber_das_Gravitationsfeld_eines_Massenpunktes_nach_der_Einsteinschen_Theorie][Schwarzschild's paper]] as a testcase for a paper.
 
 #+begin_src listex
-(lt-macrolet ((lisp (&rest args) (eval `(progn ,@args)))
-              (main (&rest args) `(env document ,@args))
-              (text (&rest args) (s-word-wrap 80 (listex args)))
-              (code (&rest args) `(-texttt ,@args))
-              (* (&rest title) `("\\section{" ,@title "}" "\n\n"))
-              (** (&rest title) `("\\subsection{" ,@title "}" "\n\n"))
-              (*** (&rest title) `("\\ssubsection{" ,@title "}" "\n\n"))
+(lt-aliaslet ((δ '/delta)
+              (μ '/mu)
+              (ν '/nu)
+              (~% "\n")
+              (=nl= '\\\\)
+              (gμν '(_ g μ ν)))
+  (lt-macrolet ((lisp (&rest args) (eval `(progn ,@args)))
+                (main (&rest args) `(env document ,@args))
+                (text (&rest args) (s-word-wrap 80 (listex args)))
+                (code (&rest args) `(-texttt ,@args))
+                (* (&rest title) `("\\section{" ,@title "}" "\n\n"))
+                (** (&rest title) `("\\subsection{" ,@title "}" "\n\n"))
+                (*** (&rest title) `("\\ssubsection{" ,@title "}" "\n\n"))
 
-              (gμν () '(_ g /mu /nu))
-              (d! (var) `(progn (-mathrm d) ,var)))
-  '(main
-    (* Über das Gravitationsfeld eines Massenpunktes nach der
-       Einsteinschen Theorie.)
+                (d! (var) `(progn (-mathrm d) ,var)))
+    '(main
+      (* Über das Gravitationsfeld eines Massenpunktes nach der
+         Einsteinschen Theorie.)
 
-    (text "Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des
-           Merkur (s. Sitzungsberichte vom 18. November 1915) folgendes
-           Problem gestellt:"
+      (text "Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des
+             Merkur (s. Sitzungsberichte vom 18. November 1915) folgendes
+             Problem gestellt:"
 
-           Ein Punkt bewege sich gemäß der Forderung
+            ~%
 
-           (eq (-label eq:main-metric-definition)
-               (lr /{ \.
-                   (env matrix
-                        (/delta /int (d! s))
-                        \\\\
-                        \\\\
-                        (= (d! s)
-                           (-sqrt (/sum (gμν)
-                                        (d! (_ x /mu))
-                                        (d! (_ x /nu)))))))))
-    )
-  )
+            Ein Punkt bewege sich gemäß der Forderung
+
+            (eq (-label eq:main-metric-definition)
+                (lr /{ \.
+                    (env matrix
+                         (δ /int (d! s))
+                         =nl= =nl=
+                         (= (d! s)
+                            (-sqrt (/sum gμν
+                                         (d! (_ x μ))
+                                         (d! (_ x ν)))))))))
+      )
+    ))
 
 #+end_src
 
