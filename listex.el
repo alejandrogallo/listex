@@ -101,16 +101,17 @@
                                   for a in !args
                                   collect `(listex:render-tex ,a))))))))
 
-(defmacro listex:lisp-macro-alist-pair (alist key list-or-fun)
+(defmacro listex:lisp-macro-alist-pair (alist key args list-or-fun)
   `(list '(alist-get ',key ,alist)
      ,(cl-etypecase list-or-fun
         (function list-or-fun)
-        (list `(lambda (args)
+        (list `(lambda ,args
                  ,list-or-fun)))))
 
-(defmacro listex:defmacro (key list-or-fun)
+(defmacro listex:defmacro (key !args list-or-fun)
   `(let ((args (listex:lisp-macro-alist-pair listex-lisp-macro-alist
                                              ,key
+                                             ,!args
                                              ,list-or-fun)))
      (eval `(setf ,@args))))
 
@@ -133,6 +134,7 @@
 ;; set indentation for lt-macrolet and newcmdlet correctly
 (progn
   (put 'lt-macrolet 'lisp-indent-function 'defun)
+  (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'newcmdlet 'lisp-indent-function 'defun))
 
 ;; important macros
@@ -141,13 +143,13 @@
 
 ;; left right stuff
 (listex:newcmd lr "\\left%s%s\\right%s" (car args) (cddr args) (cadr args))
-(listex:defmacro lrp `(lr \( \) ,@args))
-(listex:defmacro lrs `(lr \[ \] ,@args))
-(listex:defmacro set `(lr /{ /} ,@args))
+(listex:defmacro lrp (args) `(lr \( \) ,@args))
+(listex:defmacro lrs (args) `(lr \[ \] ,@args))
+(listex:defmacro set (args) `(lr /{ /} ,@args))
 
 ;; quantum mechanics
-(listex:defmacro <| `(lr /langle | ,@args))
-(listex:defmacro |> `(lr | /rangle ,@args))
+(listex:defmacro <| (args) `(lr /langle | ,@args))
+(listex:defmacro |> (args) `(lr | /rangle ,@args))
 
 ;; exponents
 (listex:newcmd ^ "%s^{%s}" (car args) (cdr args))
@@ -165,15 +167,15 @@
                (cdr args)
                (car args))
 
-(listex:defmacro mat `(env pmatrix ,@args))
+(listex:defmacro mat (args) `(env pmatrix ,@args))
 
 ;; Math environments
-(listex:defmacro $ `(begend $ ,@args))
-(listex:defmacro $$ `(begend $$ ,@args))
-(listex:defmacro eq `(env equation ,@args))
-(listex:defmacro eq* `(env equation* ,@args))
-(listex:defmacro al `(env align ,@args))
-(listex:defmacro al* `(env align* ,@args))
+(listex:defmacro $ (args) `(begend $ ,@args))
+(listex:defmacro $$ (args) `(begend $$ ,@args))
+(listex:defmacro eq (args) `(env equation ,@args))
+(listex:defmacro eq* (args) `(env equation* ,@args))
+(listex:defmacro al (args) `(env align ,@args))
+(listex:defmacro al* (args) `(env align* ,@args))
 
 ;; force newlines in the output
 (listex:newcmd terpri "\n")
@@ -182,6 +184,7 @@
 
 ;; more convoluted example
 (listex:defmacro matrix
+                 (args)
                  (lambda (args)
                    (let ((rows (car args))
                          (cols (cadr args))
@@ -231,7 +234,7 @@
     (listex:lisp-macro (let* ((args (cdr expr))
                               (name (car expr))
                               (f (listex:lisp-macro-get-fun name))
-                              (new-expr (funcall f args)))
+                              (new-expr (apply f args)))
                          (listex:render-tex new-expr)))
     (list (string-join (mapcar #'listex:render-tex expr) " "))
     (atom (format "%s" expr))))
@@ -263,7 +266,7 @@
                                             (cdr expr)))
                               (name (car expr))
                               (f (listex:lisp-macro-get-fun name)))
-                         (funcall f args)))
+                         (apply f args)))
     ;; expand the arguments
     ((or listex:command
          listex:operator
@@ -281,5 +284,13 @@
                                             ,@b)))))
     `(cl-letf (,@letf-args)
        (listex:expand-lisp-macro (progn ,@body)))))
+
+(defmacro lt-macrolet* (bindings &rest body)
+  (let ((init `(progn ,@body)))
+    (cl-loop for b in (reverse bindings)
+           with result = init
+           do (setq result `(lt-macrolet (,b) ,result))
+           finally
+           return result)))
 
 (provide 'listex)

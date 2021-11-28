@@ -42,7 +42,7 @@
 (assert-type listex:lisp-macro
              (lrp))
 ;; lt-macrolet
-(lt-macrolet ((λ '(this and that)))
+(lt-macrolet ((λ () '(this and that)))
   (assert-type listex:lisp-macro
                (λ)))
 (assert-type! listex:lisp-macro
@@ -61,6 +61,7 @@
  '(("int" . (int))
    ("pretty raw" . (pretty raw))
    ("int" . int)
+   ("% () strings work as in lisp %#" . "% () strings work as in lisp %#")
 
    ;; keywords
    ("\\int" . /int)
@@ -80,15 +81,16 @@
    ("{raw}" . (braced raw))
    ("raw" . (progn raw))
    ("A^{2}" . (^ A 2))
+   ("A_{2}" . (_ A 2))
 
    ;; lisp macros
    ("\\left(\\i\\right)" . (lrp /i))))
 
 
 ;; lt-macrolet examples
-(lt-macrolet ((Σ `(_ (^ (/sum /limits) ,(car args)) ,(cadr args)))
-              (ω `(5 6))
-              (λ `(-frac (-mathrm ,(car args))
-                         (-mathbf ,(car args)))))
+(lt-macrolet ((Σ (up down) `(_ (^ (/sum /limits) ,up) ,down))
+              (ω () `(5 6))
+              (λ (a) `(-frac (-mathrm ,a)
+                             (-mathbf ,a))))
   '(λ (+ (Σ (ω) (ω))
          (lrp (ω)))))
