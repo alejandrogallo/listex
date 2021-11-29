@@ -541,6 +541,30 @@ things:
 \end{equation}
 :end:
 
+Up to now, everything has been using regular macros from =elisp=.
+Listex presents some convenience macros implementing similar lexical scopes
+for latex macros and symbol aliases, for instance
+
+#+begin_src listex :env $$
+(lt-macrolet ((Dt (f) `(-frac ((-mathrm d) ,f)
+                              ((-mathrm d) t)))
+              (bf (n) `(-mathbf ,n)))
+  (lt-aliaslet ((*p* '(bf p))
+                (*v* '(bf v))
+                (*F* '(bf F))
+                (⨉ '%\\times))
+    '(= *F*
+        (Dt *p*)
+        (+ (⨉ (Dt m) *v*)
+           (⨉ m (Dt *v*))))))
+#+end_src
+
+#+RESULTS:
+:results:
+$$\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{\mathrm{d} t} \times \mathbf{v} + m \times \frac{\mathrm{d} \mathbf{v}}{\mathrm{d} t}$$
+:end:
+
+
 *** Coupled cluster
 
 This example writes the cluster operator in coupled cluster theory
