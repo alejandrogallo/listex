@@ -716,6 +716,9 @@ whole latex documents using s-expressions.
 #+end_export
 
 ** A matrix macro
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle no :results value
+:END:
 
 This is a simple but useful macro defined in the macro section:
 
@@ -725,7 +728,7 @@ This is a simple but useful macro defined in the macro section:
   '(matrix 2 3
          (-hat A) B (-dot E)
          (-tilde (-hat C)) D (_ E (matrix 2 2
-                                          1 (^ (-hat φ) †)
+                                          1 (* (-hat φ) †)
                                           3 4))))
 #+end_src
 
@@ -733,28 +736,40 @@ This is a simple but useful macro defined in the macro section:
 :results:
 $$\begin{pmatrix}
 \hat{A} & B & \dot{E} \\ \tilde{\hat{C}} & D & E_{\begin{pmatrix}
-1 & \hat{\phi}^{\dagger} \\ 3 & 4 \\
+1 & \hat{\phi} * \dagger \\ 3 & 4 \\
 \end{pmatrix}} \\
 \end{pmatrix}$$
 :end:
 
-And now imagine we want to find the \( \phi \)
+And now imagine we want to find the \( D \)
 and replace it with a \( \color{red}\psi \), well we can do it quite easily
 since we defined a lisp reference for the above matrix called
 =weird-matrix= and we can use the emacs lisp function =subst=
 to find and replace in the sexp tree:
 
+#+begin_src emacs-lisp :results raw drawer
+weird-matrix
+#+end_src
+
+#+RESULTS:
+:results:
+(env pmatrix ((-hat A) & B & (-dot E) \\) ((-tilde (-hat C)) & D & E_{\begin{pmatrix}
+1 & \hat{\phi} * \dagger \\ 3 & 4 \\
+\end{pmatrix}} \\))
+:end:
+
+
 #+begin_src listex :env $$
-(subst '(-textcolor red /psi)
-       '/phi
-       weird-matrix)
+(cl-subst '(-color red /psi)
+          'D
+          weird-matrix)
 #+end_src
 
 #+RESULTS:
 :results:
 $$\begin{pmatrix}
-\hat{A} & B & \dot{E} \\ \tilde{\hat{C}} & D & E_{\begin{pmatrix}
-1 & \hat{\phi}^{\dagger} \\ 3 & 4 \\
+\hat{A} & B & \dot{E} \\ \tilde{\hat{C}} & \color{red}{\psi} & E_{\begin{pmatrix}
+1 & \hat{\phi} * \dagger \\ 3 & 4 \\
 \end{pmatrix}} \\
 \end{pmatrix}$$
 :end:
