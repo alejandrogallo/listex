@@ -502,6 +502,9 @@ macro environment.
 ** Some equations
 
 *** Newton
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle listex.el :results value
+:END:
 A simple equation will be
 
 #+begin_src listex :env $$
@@ -545,7 +548,8 @@ Up to now, everything has been using regular macros from =elisp=.
 Listex presents some convenience macros implementing similar lexical scopes
 for latex macros and symbol aliases, for instance
 
-#+begin_src listex :env $$
+<newton-macroletted>=
+#+begin_src listex :env $$ :lisp-label newton-macroletted
 (lt-macrolet ((Dt (f) `(-frac ((-mathrm d) ,f)
                               ((-mathrm d) t)))
               (bf (n) `(-mathbf ,n)))
@@ -562,6 +566,17 @@ for latex macros and symbol aliases, for instance
 #+RESULTS:
 :results:
 $$\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{\mathrm{d} t} \times \mathbf{v} + m \times \frac{\mathrm{d} \mathbf{v}}{\mathrm{d} t}$$
+:end:
+
+This last expression expands to
+
+#+begin_src emacs-lisp :results value drawer :exports both
+newton-macroletted
+#+end_src
+
+#+RESULTS:
+:results:
+(= (-mathbf F) (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t)) (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t)) (-mathbf v)) (%\times m (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))
 :end:
 
 
