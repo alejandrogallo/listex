@@ -9,8 +9,8 @@
   "listex-specific header arguments.")
 
 (defun org-babel-execute:listex (body params)
-  (labels ((maybe-symbol (key) (let ((maybe-string (cdr (assq key params))))
-                                 (when maybe-string (intern maybe-string)))))
+  (cl-labels ((maybe-symbol (key) (let ((maybe-string (cdr (assq key params))))
+                                    (when maybe-string (intern maybe-string)))))
     (let* ((expr (eval (car (read-from-string body))))
            (env (maybe-symbol :env))
            (label (maybe-symbol :label))
@@ -163,7 +163,7 @@
                                     with i = 0
                                     with buff = nil
                                     do (push el buff)
-                                    do (incf i)
+                                    do (cl-incf i)
                                     if (eq (% i cols) 0)
                                     do (push '\\\\ buff)
                                     and collect (reverse buff)
@@ -306,3 +306,5 @@
   (put 'lt-cmdlet 'lisp-indent-function 'defun))
 
 (provide 'listex)
+
+'(= (-mathbf F) (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t)) (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t)) (-mathbf v)) (%\times m (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))

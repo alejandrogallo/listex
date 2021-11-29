@@ -137,8 +137,8 @@ We have beyond the usual flags, the following:
   "listex-specific header arguments.")
 
 (defun org-babel-execute:listex (body params)
-  (labels ((maybe-symbol (key) (let ((maybe-string (cdr (assq key params))))
-                                 (when maybe-string (intern maybe-string)))))
+  (cl-labels ((maybe-symbol (key) (let ((maybe-string (cdr (assq key params))))
+                                    (when maybe-string (intern maybe-string)))))
     (let* ((expr (eval (car (read-from-string body))))
            (env (maybe-symbol :env))
            (label (maybe-symbol :label))
@@ -318,7 +318,7 @@ for ease of use for others.
                                     with i = 0
                                     with buff = nil
                                     do (push el buff)
-                                    do (incf i)
+                                    do (cl-incf i)
                                     if (eq (% i cols) 0)
                                     do (push '\\\\ buff)
                                     and collect (reverse buff)
@@ -527,11 +527,11 @@ things:
       (v '(-mathbf v))
       (p '(-mathbf p))
       (X '%\\times))
-  (labels ((D (e x) `(-frac (,d ,e) (,d ,x))))
+  (cl-labels ((D (e x) `(-frac (,d ,e) (,d ,x))))
     `(= ,F
         ,(D p 't)
         (+ (,X ,(D 'm 't)
-                   ,v)
+               ,v)
            (,X m
                ,(D v 't)))
         )))
@@ -570,15 +570,14 @@ $$\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{
 
 This last expression expands to
 
-#+begin_src emacs-lisp :results value drawer :exports both :tangle no
-newton-macroletted
+#+begin_src emacs-lisp :eval no :exports code
+'(= (-mathbf F)
+    (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t))
+    (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t))
+                (-mathbf v))
+       (%\times m
+                (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))
 #+end_src
-
-#+RESULTS:
-:results:
-(= (-mathbf F) (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t)) (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t)) (-mathbf v)) (%\times m (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))
-:end:
-
 
 *** Coupled cluster
 
@@ -586,26 +585,26 @@ This example writes the cluster operator in coupled cluster theory
 as an example for managing align environments.
 
 #+begin_src listex :env al*
-(labels (;; mathematics and second quantization
-         (Σ (idx) `(_ (/sum /limits) ,idx))
-         (t (up down) `(_ (^ t ,up) ,down))
-         (a (i) `(_ (-hat a) ,i))
-         (á (i) `(^ ,(a i) /dagger))
-         (áa (up down) `(,(mapcar #'á up)
-                         ,(mapcar #'a (reverse down))))
+(cl-labels (;; mathematics and second quantization
+            (Σ (idx) `(_ (/sum /limits) ,idx))
+            (t (up down) `(_ (^ t ,up) ,down))
+            (a (i) `(_ (-hat a) ,i))
+            (á (i) `(^ ,(a i) /dagger))
+            (áa (up down) `(,(mapcar #'á up)
+                            ,(mapcar #'a (reverse down))))
 
-         ;; define particles and holes
-         (parts (n) (seq-take '(a b c d e f g A B C D E F G) n))
-         (holes (n) (seq-take '(i j k l m n o I J K L M N O) n))
+            ;; define particles and holes
+            (parts (n) (seq-take '(a b c d e f g A B C D E F G) n))
+            (holes (n) (seq-take '(i j k l m n o I J K L M N O) n))
 
-         ;; Coupled cluster term of order n
-         (term (n) (let ((pow (math-power-of-2 n))
-                         (abc (parts n))
-                         (ijk (holes n)))
-                     (list (when (> n 1) (list '-frac 1 pow))
-                           (Σ `(,@abc ,@ijk))
-                           (t abc ijk)
-                           (áa abc ijk)))))
+            ;; Coupled cluster term of order n
+            (term (n) (let ((pow (progn (require 'calc-bin) (math-power-of-2 n)))
+                            (abc (parts n))
+                            (ijk (holes n)))
+                        (list (when (> n 1) (list '-frac 1 pow))
+                              (Σ `(,@abc ,@ijk))
+                              (t abc ijk)
+                              (áa abc ijk)))))
   ;; this inserts a plus and & and \\ for the align environment
   (let ((+ '%\\\\&+))
 
@@ -625,38 +624,39 @@ and we can try the same this time using
 =lt-macrolet=
 
 #+begin_src listex :env al*
-(labels ((ps (n) (seq-take '(a b c d e f g A B C D E F G) n))
-         (hs (n) (seq-take '(i j k l m n o I J K L M N O) n)))
+(cl-labels ((ps (n) (seq-take '(a b c d e f g A B C D E F G) n))
+            (hs (n) (seq-take '(i j k l m n o I J K L M N O) n)))
 
-  (lt-macrolet ((&+ (&rest args) `(%\\\\&+ ,@args))
-                (t (up down) `(_ (^ t ,up) ,down))
-                (^a (i) `(_ (-hat a) ,i))
-                (^á (i) `(^ (^a ,i) /dagger))
-                ;; holes and particles
-                (áa (up down) `(,(cl-loop for p in up collect `(^á ,p))
-                                ,(cl-loop for p in down collect `(^a ,p))))
+  (lt-macrolet* ((&+ (&rest args) `(%\\\\&+ ,@args))
+                 (t (up down) `(_ (^ t ,up) ,down))
+                 (^a (i) `(_ (-hat a) ,i))
+                 (^á (i) `(^ (^a ,i) /dagger))
+                 ;; holes and particles
+                 (áa (up down) `(,(cl-loop for p in up collect `(^á ,p))
+                                 ,(cl-loop for p in down collect `(^a ,p))))
 
 
-                (Σ (&rest idx) `(_ (/sum /limits) ,@idx))
+                 (Σ (&rest idx) `(_ (/sum /limits) ,@idx))
 
-                (τ (n) (let ((pow (math-power-of-2 n))
-                             (abc (ps n))
-                             (ijk (reverse (hs n))))
-                         `(,(when (> n 1) `(-frac 1 ,pow))
-                           (Σ ,abc ,ijk)
-                           (t ,abc ,ijk)
-                           (áa ,abc ,ijk)))))
+                 (τ (n) (let ((pow (math-power-of-2 n))
+                              (abc (ps n))
+                              (ijk (reverse (hs n))))
+                          `(,(when (> n 1) `(-frac 1 ,pow))
+                            (Σ ,abc ,ijk)
+                            (t ,abc ,ijk)
+                            (áa ,abc ,ijk)))))
 
     '(%&= (-hat T)
           (&+ (τ 1)
-              (τ 2)))))
+              (τ 2)
+              (τ 3)))))
 
 #+end_src
 
 #+RESULTS:
 :results:
 \begin{align*}
-\hat{T} &=  Σ a i t a i áa a i \\&+ \frac{1}{4} Σ a b j i t a b j i áa a b j i
+\hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b j i} t^{a b}_{j i} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i} \\&+ \frac{1}{8} \sum \limits_{a b c k j i} t^{a b c}_{k j i} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{c}^{\dagger} \hat{a}_{k} \hat{a}_{j} \hat{a}_{i}
 \end{align*}
 :end:
 
@@ -670,7 +670,7 @@ in principle writing documents in the style of
 Consider also reading [[https://oremacs.com/2015/01/23/eltex/][this blog post]] if you really want to write
 whole latex documents using s-expressions.
 
-#+begin_src listex :exports code :wrap src latex
+#+begin_src listex :exports code :wrap src latex :eval no
 '(progn
    (-documentclass [12pt] article)
    (-usepackage hyperref)
@@ -696,7 +696,7 @@ whole latex documents using s-expressions.
 #+end_src
 
 #+RESULTS:
-#+begin_src latex
+#+begin_src latex :eval no
 \documentclass[12pt]{article} \usepackage{hyperref} \begin{document}
 \section{Introduction} 
  This document is is an example for the \texttt{LisTeX} domain specific language (DSL). 
@@ -796,7 +796,8 @@ This is a partial implementation of
               (gμν '(_ g μ ν)))
   (lt-macrolet ((lisp (&rest args) (eval `(progn ,@args)))
                 (main (&rest args) `(env document ,@args))
-                (text (&rest args) (s-word-wrap 80 (listex args)))
+                (text (&rest args) (progn (require 's)
+                                          (s-word-wrap 80 (listex args))))
                 (code (&rest args) `(-texttt ,@args))
                 (* (&rest title) `("\\section{" ,@title "}" "\n\n"))
                 (** (&rest title) `("\\subsection{" ,@title "}" "\n\n"))
@@ -1051,7 +1052,7 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 ** Makefile
 :PROPERTIES:
 :header-args: :comments both
-:header-args:makefile: :tangle Makefile
+:header-args:makefile: :tangle Makefile :eval no
 :END:
 *** Local Dependencies
 
@@ -1105,7 +1106,7 @@ and we need org to tex
 
 Use tectonic to compile latex, it's easier
 and you can just download it using this script
-#+begin_src sh :tangle tools/install-tectonic :mkdirp t :comments none
+#+begin_src sh :tangle tools/install-tectonic :mkdirp t :comments none :eval no
 #!/usr/bin/env bash
 # author: Alejandro Gallo
 
@@ -1129,6 +1130,9 @@ TECTONIC_RERUNS ?=
 
 
 ** Nix shell
+:PROPERTIES:
+:header-args: :eval no
+:END:
 
 If you used the nix package manager you can use the supplied
 shell to compile the examples.
