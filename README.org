@@ -570,7 +570,7 @@ $$\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{
 
 This last expression expands to
 
-#+begin_src emacs-lisp :results value drawer :exports both
+#+begin_src emacs-lisp :results value drawer :exports both :tangle no
 newton-macroletted
 #+end_src
 
@@ -1031,6 +1031,7 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 
 (message "requiring org")
 (require 'org)
+(setq org-confirm-babel-evaluate nil)
 
 (message "up org-contrib")
 (use-package org-plus-contrib

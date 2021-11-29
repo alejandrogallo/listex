@@ -19,6 +19,7 @@
 
 (message "requiring org")
 (require 'org)
+(setq org-confirm-babel-evaluate nil)
 
 (message "up org-contrib")
 (use-package org-plus-contrib
