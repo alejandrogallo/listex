@@ -25,21 +25,11 @@
              (+) (-) (*)
              (%custom) (%) (%%))
 
-;; macro
-(assert-type listex:macro
-             (braced) (progn)
-             (^) (^ A) (^ A B 2)
-             (_) (_ A) (_ A B))
-;; newcmdlet simple test
-(newcmdlet ((not-a-tex-macro "not-a tex-macro"))
-  (assert-type listex:macro
-               (not-a-tex-macro)))
-(assert-type! listex:macro
-              (not-a-tex-macro))
-
-
 ;; lisp-macros
 (assert-type listex:lisp-macro
+             (braced) (progn)
+             (^) (^ A) (^ A B 2)
+             (_) (_ A) (_ A B)
              (lrp))
 
 
@@ -86,6 +76,11 @@
   ((λ) . (this and that))
   ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1))))
 
+;; lt-macrolet test
+(assert-replacements lt-cmdlet listex:lisp-macro (lambda (x) (list (car x)))
+                     ((γ (u p) "\\lambda^{%s}_{%s}"))
+  ((γ 1 (-frac 1 2)) . "\\lambda^{1}_{\\frac{1}{2}}"))
+
 
 ;; rendering
 (defun assert-render (alist)
@@ -123,7 +118,7 @@
    ("A_{2}" . (_ A 2))
 
    ;; lisp macros
-   ("\\left(\\i\\right)" . (lrp /i))))
+   ("\\left( \\i \\right)" . (lrp /i))))
 
 
 ;; lt-macrolet examples

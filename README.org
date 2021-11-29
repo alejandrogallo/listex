@@ -58,21 +58,21 @@ This package has the following concepts:
 
 
 #+caption: Summary of the different types of commands existing in =listex=
-| name                  | prefix | what                                | lisp             | tex                | Rule                            |
-|-----------------------+--------+-------------------------------------+------------------+--------------------+---------------------------------|
-| command <<command>>   | =-=    | Latex commands                      | =(-cmd a b c d)= | =\cmd{a}{b}{c}{d}= | by prefix                       |
-| keyword <<keyword>>   | =/=    | Single keywords                     | =(/cmd a b c d)= | =\cmd a b c d=     | by prefix                       |
-| operator <<operator>> |        | Infix inclusion                     | =(+ a b c)=      | =a + b + c=        | is in =listex-operator-list=    |
-|                       | =%=    |                                     | =(%\\times A B)= | =A \times B=       | by prefix                       |
-| lisp-macro            |        | Function returning a symbol or list |                  |                    | is in =listex-lisp-macro-alist= |
-| tex-macro             |        | Function returning a string         | =(^ a b)=        | =a^{b}=            | in in =listex-tex-macro-alist=  |
-| alias                 |        | Simple symbol replacement           | =λ=              | =\lambda=          | is in =listex-alias-alist=      |
-|-----------------------+--------+-------------------------------------+------------------+--------------------+---------------------------------|
-| atom                  |        | Convert whatever to string          | =int=            | =int=              |                                 |
-|                       |        |                                     | =[a=5, b]=       | =[a=5, b]=         |                                 |
-|                       |        |                                     | ="a ()\sum"=     | =a ()\sum=         |                                 |
-| list                  |        | Join elements by space              | =(a b)=          | =a b=              |                                 |
-|-----------------------+--------+-------------------------------------+------------------+--------------------+---------------------------------|
+| name                  | prefix | Create            | let construct | what                                | lisp             | tex                | Rule                            |
+|-----------------------+--------+-------------------+---------------+-------------------------------------+------------------+--------------------+---------------------------------|
+| command <<command>>   | =-=    |                   |               | Latex commands                      | =(-cmd a b c d)= | =\cmd{a}{b}{c}{d}= | by prefix                       |
+| keyword <<keyword>>   | =/=    |                   |               | Single keywords                     | =(/cmd a b c d)= | =\cmd a b c d=     | by prefix                       |
+| operator <<operator>> |        |                   |               | Infix inclusion                     | =(+ a b c)=      | =a + b + c=        | is in =listex-operator-list=    |
+|                       | =%=    |                   |               |                                     | =(%\\times A B)= | =A \times B=       | by prefix                       |
+| lisp-macro            |        | =listex:defmacro= | =lt-macrolet= | Function returning a symbol or list |                  |                    | is in =listex-lisp-macro-alist= |
+| tex-macro             |        | =listex:newcmd=   | =lt-cmdlet=   | Function returning a string         | =(^ a b)=        | =a^{b}=            | special case of =lisp-macro=    |
+| alias                 |        |                   | =lt-aliaslet= | Simple symbol replacement           | =λ=              | =\lambda=          | is in =listex-alias-alist=      |
+|-----------------------+--------+-------------------+---------------+-------------------------------------+------------------+--------------------+---------------------------------|
+| atom                  |        |                   |               | Convert whatever to string          | =int=            | =int=              |                                 |
+|                       |        |                   |               |                                     | =[a=5, b]=       | =[a=5, b]=         |                                 |
+|                       |        |                   |               |                                     | ="a ()\sum"=     | =a ()\sum=         |                                 |
+| list                  |        |                   |               | Join elements by space              | =(a b)=          | =a b=              |                                 |
+|-----------------------+--------+-------------------+---------------+-------------------------------------+------------------+--------------------+---------------------------------|
 
 
 
@@ -208,15 +208,6 @@ to make it easy to edit the s-expressions with your preferred bindings.
                            (string-prefix-p listex-operator-prefix
                                             (format "%s" name))))))))
 
-(defmacro listex:macro-get-fun (name)
-  `(or (alist-get ,name listex-tex-macro--alist-user)
-       (alist-get ,name listex-tex-macro-alist)))
-
-
-(cl-deftype listex:macro ()
-  `(and list
-        listex:car-is-atom
-        (satisfies ,(lambda (expr) (listex:macro-get-fun (car expr))))))
 
 (defmacro listex:lisp-macro-get-fun (name)
   `(alist-get ,name listex-lisp-macro-alist))
@@ -241,22 +232,7 @@ to make it easy to edit the s-expressions with your preferred bindings.
 
 ** Implementation
 #+begin_src emacs-lisp
-(defvar listex-tex-macro-alist nil)
 (defvar listex-lisp-macro-alist nil)
-
-;; TODO: remove and use cl-letf
-;; this is for the newcmdlet macro
-(defvar listex-tex-macro--alist-user nil)
-
-(defmacro listex:addcmd (alist key fmt &rest !args)
-  `(setf (alist-get ',key ,alist)
-         ,(cl-etypecase fmt
-            (function fmt)
-            (string `(lambda (args)
-                       (format ,fmt
-                               ,@(cl-loop
-                                  for a in !args
-                                  collect `(listex:render-tex ,a))))))))
 
 (defmacro listex:lisp-macro-alist-pair (alist key args list-or-fun)
   `(list '(alist-get ',key ,alist)
@@ -274,27 +250,15 @@ to make it easy to edit the s-expressions with your preferred bindings.
 
 
 
-(defmacro listex:newcmd (key fmt &rest !args)
-  `(listex:addcmd listex-tex-macro-alist
-                  ,key ,fmt ,@!args))
+(defmacro listex:newcmd--format-function (args fmt)
+  `(format ,fmt ,@(cl-loop for a in args
+                           ;; make sure that a is not a & identifier
+                           ;; for functions like &rest
+                           if (not (string-prefix-p "&" (symbol-name a)))
+                           collect `(listex:render-tex ,a))))
 
-(defmacro newcmdlet (ncmds &rest body)
-  `(let (listex-tex-macro--alist-user)
-     ,@(cl-loop for cmd in ncmds
-             collect
-             `(listex:addcmd listex-tex-macro--alist-user
-                             ,(car cmd) ,(cadr cmd)
-                             ,@(cddr cmd)))
-     ,@body))
-
-
-;; set indentation for lt-macrolet and newcmdlet correctly
-(progn
-  (put 'lt-aliaslet 'lisp-indent-function 'defun)
-  (put 'lt-macrolet 'lisp-indent-function 'defun)
-  (put 'lt-macrolet* 'lisp-indent-function 'defun)
-  (put 'newcmdlet 'lisp-indent-function 'defun))
-
+(defmacro listex:newcmd (key args fmt)
+  `(listex:defmacro ,key ,args (listex:newcmd--format-function ,args, fmt)))
 
 #+end_src
 
@@ -305,11 +269,12 @@ for ease of use for others.
 
 #+begin_src emacs-lisp
 ;; important macros
-(listex:newcmd braced "{%s}" args)
-(listex:newcmd progn "%s" args)
+(listex:newcmd braced (&rest body) "{%s}")
+(listex:newcmd progn (&rest body) "%s")
+(listex:newcmd list (&rest body) "%s")
 
 ;; left right stuff
-(listex:newcmd lr "\\left%s%s\\right%s" (car args) (cddr args) (cadr args))
+(listex:newcmd lr (l r &rest body) "\\left%1$s %3$s \\right%2$s")
 (listex:defmacro lrp (&rest args) `(lr \( \) ,@args))
 (listex:defmacro lrs (&rest args) `(lr \[ \] ,@args))
 (listex:defmacro set (&rest args) `(lr /{ /} ,@args))
@@ -319,20 +284,14 @@ for ease of use for others.
 (listex:defmacro |> (&rest args) `(lr | /rangle ,@args))
 
 ;; exponents
-(listex:newcmd ^ "%s^{%s}" (car args) (cdr args))
-(listex:newcmd _ "%s_{%s}" (car args) (cdr args))
-(listex:newcmd ^_ "%s^{%s}_{%s}" (car args) (cadr args) (caddr args))
-(listex:newcmd _^ "%s_{%s}^{%s}" (car args) (cadr args) (caddr args))
+(listex:newcmd ^ (base &rest sup) "%s^{%s}")
+(listex:newcmd _ (base &rest sub) "%s_{%s}")
+(listex:newcmd ^_ (base sup sub) "%s^{%s}_{%s}")
+(listex:newcmd _^ (base sub sup) "%s_{%s}^{%s}")
 
 ;; wrapping
-(listex:newcmd begend "%s%s%s"
-               (car args)
-               (cdr args)
-               (car args))
-(listex:newcmd env "\\begin{%s}\n%s\n\\end{%s}"
-               (car args)
-               (cdr args)
-               (car args))
+(listex:newcmd begend (b &rest bod) "%s%s%1$s")
+(listex:newcmd env (env-name &rest body) "\\begin{%1$s}\n%s\n\\end{%1$s}")
 
 (listex:defmacro mat (&rest args) `(env pmatrix ,@args))
 
@@ -345,9 +304,9 @@ for ease of use for others.
 (listex:defmacro al* (&rest args) `(env align* ,@args))
 
 ;; force newlines in the output
-(listex:newcmd terpri "\n")
-(listex:newcmd br "\n")
-(listex:newcmd nl "\n")
+(listex:newcmd terpri () "\n")
+(listex:newcmd br () "\n")
+(listex:newcmd nl () "\n")
 
 ;; more convoluted example
 (listex:defmacro matrix
@@ -390,10 +349,13 @@ for ease of use for others.
     (listex:command
      (let* ((args (mapcar (lambda (e) (cl-etypecase e
                                         (vector e)
-                                        (otherwise `(braced ,e))))
+                                        (otherwise (format
+                                                    "{%s}"
+                                                    (listex:render-tex e)))))
                           (cdr expr)))
             (name (format "\\%s" (string-remove-prefix listex-command-prefix
-                                                       (symbol-name (car expr)))))
+                                                       (symbol-name
+                                                        (car expr)))))
             (args-strings (mapcar #'listex:render-tex args)))
        (concat name (string-join args-strings))))
     (listex:operator (let* ((name (car expr))
@@ -404,10 +366,6 @@ for ease of use for others.
                                   namestr)))
                        (string-join (mapcar #'listex:render-tex (cdr expr))
                                     (format " %s " op))))
-    (listex:macro (let* ((args (cdr expr))
-                         (name (car expr))
-                         (f (listex:macro-get-fun name)))
-                    (funcall f args)))
     (list (string-join (mapcar #'listex:render-tex expr) " "))
     (atom (format "%s" expr))))
 
@@ -457,10 +415,9 @@ in the =listex:expand-lisp-macro= function.
     (listex:alias (listex:get-alias expr))
     ;; expand the arguments
     ((or listex:command
-         listex:operator
-         listex:macro) (let ((args (mapcar #'listex:expand-lisp-macro
-                                           (cdr expr)))
-                             (name (car expr)))
+         listex:operator) (let ((args (mapcar #'listex:expand-lisp-macro
+                                              (cdr expr)))
+                                (name (car expr)))
          `(,name ,@args)))
     (list (mapcar #'listex:expand-lisp-macro expr))
     (otherwise expr)))
@@ -504,12 +461,32 @@ macro environment.
                         ,@body))
 
 (defmacro lt-macrolet* (bindings &rest body)
+  "This is useful in the case that you want to render
+   some text inside of a lt-macrolet expression."
   (let ((init `(progn ,@body)))
     (cl-loop for b in (reverse bindings)
            with result = init
            do (setq result `(lt-macrolet (,b) ,result))
            finally
            return result)))
+
+(defmacro lt-cmdlet (cmds &rest body)
+  `(lt-macrolet ,(cl-loop for cmd in cmds
+                          collect
+                          (let ((key (car cmd))
+                                (args (cadr cmd))
+                                (fmt (caddr cmd)))
+                            `(,key ,args
+                                   (listex:newcmd--format-function ,args
+                                                                   ,fmt))))
+     ,@body))
+
+;; set indentation for lt-macrolet and other let constructs correctly
+(progn
+  (put 'lt-aliaslet 'lisp-indent-function 'defun)
+  (put 'lt-macrolet 'lisp-indent-function 'defun)
+  (put 'lt-macrolet* 'lisp-indent-function 'defun)
+  (put 'lt-cmdlet 'lisp-indent-function 'defun))
 #+end_src
 
 
@@ -612,24 +589,24 @@ and we can try the same this time using
 (labels ((ps (n) (seq-take '(a b c d e f g A B C D E F G) n))
          (hs (n) (seq-take '(i j k l m n o I J K L M N O) n)))
 
-  (lt-macrolet* ((&+ (&rest args) `(%\\\\&+ ,@args))
-                 (t (up down) `(_ (^ t ,up) ,down))
-                 (^a (i) `(_ (-hat a) ,i))
-                 (^á (i) `(^ (^a ,i) /dagger))
-                 ;; holes and particles
-                 (áa (up down) `(,(cl-loop for p in up collect `(^á ,p))
-                                 ,(cl-loop for p in down collect `(^a ,p))))
+  (lt-macrolet ((&+ (&rest args) `(%\\\\&+ ,@args))
+                (t (up down) `(_ (^ t ,up) ,down))
+                (^a (i) `(_ (-hat a) ,i))
+                (^á (i) `(^ (^a ,i) /dagger))
+                ;; holes and particles
+                (áa (up down) `(,(cl-loop for p in up collect `(^á ,p))
+                                ,(cl-loop for p in down collect `(^a ,p))))
 
 
-                 (Σ (&rest idx) `(_ (/sum /limits) ,@idx))
+                (Σ (&rest idx) `(_ (/sum /limits) ,@idx))
 
-                 (τ (n) (let ((pow (math-power-of-2 n))
-                              (abc (ps n))
-                              (ijk (reverse (hs n))))
-                          `(,(when (> n 1) `(-frac 1 ,pow))
-                            (Σ ,abc ,ijk)
-                            (t ,abc ,ijk)
-                            (áa ,abc ,ijk)))))
+                (τ (n) (let ((pow (math-power-of-2 n))
+                             (abc (ps n))
+                             (ijk (reverse (hs n))))
+                         `(,(when (> n 1) `(-frac 1 ,pow))
+                           (Σ ,abc ,ijk)
+                           (t ,abc ,ijk)
+                           (áa ,abc ,ijk)))))
 
     '(%&= (-hat T)
           (&+ (τ 1)
@@ -640,7 +617,7 @@ and we can try the same this time using
 #+RESULTS:
 :results:
 \begin{align*}
-\hat{T} &=  \sum \limits_{a i} t^{a}_{i} \hat{a}_{a}^{\dagger} \hat{a}_{i} \\&+ \frac{1}{4} \sum \limits_{a b j i} t^{a b}_{j i} \hat{a}_{a}^{\dagger} \hat{a}_{b}^{\dagger} \hat{a}_{j} \hat{a}_{i}
+\hat{T} &=  Σ a i t a i áa a i \\&+ \frac{1}{4} Σ a b j i t a b j i áa a b j i
 \end{align*}
 :end:
 
@@ -738,7 +715,7 @@ to find and replace in the sexp tree:
 :results:
 $$\begin{pmatrix}
 \hat{A} & B & \dot{E} \\ \tilde{\hat{C}} & D & E_{\begin{pmatrix}
-1 & \hat{\textcolor{red}{\psi}}^{\dagger} \\ 3 & 4 \\
+1 & \hat{\phi}^{\dagger} \\ 3 & 4 \\
 \end{pmatrix}} \\
 \end{pmatrix}$$
 :end:
@@ -746,7 +723,7 @@ $$\begin{pmatrix}
 That's not bad at all.
 
 
-** TODO Newcmdlet
+** Cmdlet
 
 There should be an easy way of defining lexically macros,
 but I should think about tihs.
@@ -755,15 +732,15 @@ This is what works now, however the problem is that I would not want
 to have to call =listex= before the command.
 
 #+begin_src listex :env $$
-(newcmdlet ((χ "%s^{%s^{%s}}" args args args))
-           (listex '(-frac (χ 5 5)
-                           /varphi)))
+(lt-cmdlet ((χ (a b c) "%s^{%s^{%s}}"))
+           '(-frac (χ 5 5 5)
+                   /varphi))
 
 #+end_src
 
 #+RESULTS:
 :results:
-$$\frac{5 5^{5 5^{5 5}}}{\varphi}$$
+$$\frac{5^{5^{5}}}{\varphi}$$
 :end:
 
 ** Schwarzschild's paper
@@ -837,10 +814,10 @@ This is a partial implementation of
  Hr. Einstein hat in seiner Arbeit über die Perihelbewegung des Merkur
 (s. Sitzungsberichte vom 18. November 1915) folgendes Problem gestellt: \\ Ein
 Punkt bewege sich gemäß der Forderung \begin{equation}
-\label{eq:main-metric-definition} \left\{\begin{matrix} \delta \int \mathrm{d} s
-= 0 \\ \\ \mathrm{d} s = \sqrt{\sum g_{\mu \nu} \mathrm{d} x_{\mu} \mathrm{d}
-x_{\nu}} \end{matrix}\right.  \end{equation} wobeit $g_{\mu \nu}$ Funktionen der
-Variabeln $x$ bedeuten und bei der Variation am Anfang und Ende des
+\label{eq:main-metric-definition} \left\{ \begin{matrix} \delta \int \mathrm{d}
+s = 0 \\ \\ \mathrm{d} s = \sqrt{\sum g_{\mu \nu} \mathrm{d} x_{\mu} \mathrm{d}
+x_{\nu}} \end{matrix} \right.  \end{equation} wobeit $g_{\mu \nu}$ Funktionen
+der Variabeln $x$ bedeuten und bei der Variation am Anfang und Ende des
 Integrationswegs die Variablen $x$ festzuhalten sind. Der Punkt bewege sich
 also, kurz gesagt, auf einer geodätischen Linie in der durch das Linienelement
 $\mathrm{d} s$ charakterisierten Mannigfaltigkeit. \\ Die Ausführung der
@@ -880,21 +857,11 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
              (+) (-) (*)
              (%custom) (%) (%%))
 
-;; macro
-(assert-type listex:macro
-             (braced) (progn)
-             (^) (^ A) (^ A B 2)
-             (_) (_ A) (_ A B))
-;; newcmdlet simple test
-(newcmdlet ((not-a-tex-macro "not-a tex-macro"))
-  (assert-type listex:macro
-               (not-a-tex-macro)))
-(assert-type! listex:macro
-              (not-a-tex-macro))
-
-
 ;; lisp-macros
 (assert-type listex:lisp-macro
+             (braced) (progn)
+             (^) (^ A) (^ A B 2)
+             (_) (_ A) (_ A B)
              (lrp))
 
 
@@ -941,6 +908,11 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
   ((λ) . (this and that))
   ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1))))
 
+;; lt-macrolet test
+(assert-replacements lt-cmdlet listex:lisp-macro (lambda (x) (list (car x)))
+                     ((γ (u p) "\\lambda^{%s}_{%s}"))
+  ((γ 1 (-frac 1 2)) . "\\lambda^{1}_{\\frac{1}{2}}"))
+
 
 ;; rendering
 (defun assert-render (alist)
@@ -978,7 +950,7 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
    ("A_{2}" . (_ A 2))
 
    ;; lisp macros
-   ("\\left(\\i\\right)" . (lrp /i))))
+   ("\\left( \\i \\right)" . (lrp /i))))
 
 
 ;; lt-macrolet examples

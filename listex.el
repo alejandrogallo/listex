@@ -66,15 +66,6 @@
                            (string-prefix-p listex-operator-prefix
                                             (format "%s" name))))))))
 
-(defmacro listex:macro-get-fun (name)
-  `(or (alist-get ,name listex-tex-macro--alist-user)
-       (alist-get ,name listex-tex-macro-alist)))
-
-
-(cl-deftype listex:macro ()
-  `(and list
-        listex:car-is-atom
-        (satisfies ,(lambda (expr) (listex:macro-get-fun (car expr))))))
 
 (defmacro listex:lisp-macro-get-fun (name)
   `(alist-get ,name listex-lisp-macro-alist))
@@ -94,22 +85,7 @@
   '(and symbol
         (satisfies (lambda (expr) (listex:get-alias expr)))))
 
-(defvar listex-tex-macro-alist nil)
 (defvar listex-lisp-macro-alist nil)
-
-;; TODO: remove and use cl-letf
-;; this is for the newcmdlet macro
-(defvar listex-tex-macro--alist-user nil)
-
-(defmacro listex:addcmd (alist key fmt &rest !args)
-  `(setf (alist-get ',key ,alist)
-         ,(cl-etypecase fmt
-            (function fmt)
-            (string `(lambda (args)
-                       (format ,fmt
-                               ,@(cl-loop
-                                  for a in !args
-                                  collect `(listex:render-tex ,a))))))))
 
 (defmacro listex:lisp-macro-alist-pair (alist key args list-or-fun)
   `(list '(alist-get ',key ,alist)
@@ -127,32 +103,23 @@
 
 
 
-(defmacro listex:newcmd (key fmt &rest !args)
-  `(listex:addcmd listex-tex-macro-alist
-                  ,key ,fmt ,@!args))
+(defmacro listex:newcmd--format-function (args fmt)
+  `(format ,fmt ,@(cl-loop for a in args
+                           ;; make sure that a is not a & identifier
+                           ;; for functions like &rest
+                           if (not (string-prefix-p "&" (symbol-name a)))
+                           collect `(listex:render-tex ,a))))
 
-(defmacro newcmdlet (ncmds &rest body)
-  `(let (listex-tex-macro--alist-user)
-     ,@(cl-loop for cmd in ncmds
-             collect
-             `(listex:addcmd listex-tex-macro--alist-user
-                             ,(car cmd) ,(cadr cmd)
-                             ,@(cddr cmd)))
-     ,@body))
-
-
-;; set indentation for lt-macrolet and newcmdlet correctly
-(progn
-  (put 'lt-macrolet 'lisp-indent-function 'defun)
-  (put 'lt-macrolet* 'lisp-indent-function 'defun)
-  (put 'newcmdlet 'lisp-indent-function 'defun))
+(defmacro listex:newcmd (key args fmt)
+  `(listex:defmacro ,key ,args (listex:newcmd--format-function ,args, fmt)))
 
 ;; important macros
-(listex:newcmd braced "{%s}" args)
-(listex:newcmd progn "%s" args)
+(listex:newcmd braced (&rest body) "{%s}")
+(listex:newcmd progn (&rest body) "%s")
+(listex:newcmd list (&rest body) "%s")
 
 ;; left right stuff
-(listex:newcmd lr "\\left%s%s\\right%s" (car args) (cddr args) (cadr args))
+(listex:newcmd lr (l r &rest body) "\\left%1$s %3$s \\right%2$s")
 (listex:defmacro lrp (&rest args) `(lr \( \) ,@args))
 (listex:defmacro lrs (&rest args) `(lr \[ \] ,@args))
 (listex:defmacro set (&rest args) `(lr /{ /} ,@args))
@@ -162,20 +129,14 @@
 (listex:defmacro |> (&rest args) `(lr | /rangle ,@args))
 
 ;; exponents
-(listex:newcmd ^ "%s^{%s}" (car args) (cdr args))
-(listex:newcmd _ "%s_{%s}" (car args) (cdr args))
-(listex:newcmd ^_ "%s^{%s}_{%s}" (car args) (cadr args) (caddr args))
-(listex:newcmd _^ "%s_{%s}^{%s}" (car args) (cadr args) (caddr args))
+(listex:newcmd ^ (base &rest sup) "%s^{%s}")
+(listex:newcmd _ (base &rest sub) "%s_{%s}")
+(listex:newcmd ^_ (base sup sub) "%s^{%s}_{%s}")
+(listex:newcmd _^ (base sub sup) "%s_{%s}^{%s}")
 
 ;; wrapping
-(listex:newcmd begend "%s%s%s"
-               (car args)
-               (cdr args)
-               (car args))
-(listex:newcmd env "\\begin{%s}\n%s\n\\end{%s}"
-               (car args)
-               (cdr args)
-               (car args))
+(listex:newcmd begend (b &rest bod) "%s%s%1$s")
+(listex:newcmd env (env-name &rest body) "\\begin{%1$s}\n%s\n\\end{%1$s}")
 
 (listex:defmacro mat (&rest args) `(env pmatrix ,@args))
 
@@ -188,9 +149,9 @@
 (listex:defmacro al* (&rest args) `(env align* ,@args))
 
 ;; force newlines in the output
-(listex:newcmd terpri "\n")
-(listex:newcmd br "\n")
-(listex:newcmd nl "\n")
+(listex:newcmd terpri () "\n")
+(listex:newcmd br () "\n")
+(listex:newcmd nl () "\n")
 
 ;; more convoluted example
 (listex:defmacro matrix
@@ -228,10 +189,13 @@
     (listex:command
      (let* ((args (mapcar (lambda (e) (cl-etypecase e
                                         (vector e)
-                                        (otherwise `(braced ,e))))
+                                        (otherwise (format
+                                                    "{%s}"
+                                                    (listex:render-tex e)))))
                           (cdr expr)))
             (name (format "\\%s" (string-remove-prefix listex-command-prefix
-                                                       (symbol-name (car expr)))))
+                                                       (symbol-name
+                                                        (car expr)))))
             (args-strings (mapcar #'listex:render-tex args)))
        (concat name (string-join args-strings))))
     (listex:operator (let* ((name (car expr))
@@ -242,10 +206,6 @@
                                   namestr)))
                        (string-join (mapcar #'listex:render-tex (cdr expr))
                                     (format " %s " op))))
-    (listex:macro (let* ((args (cdr expr))
-                         (name (car expr))
-                         (f (listex:macro-get-fun name)))
-                    (funcall f args)))
     (list (string-join (mapcar #'listex:render-tex expr) " "))
     (atom (format "%s" expr))))
 
@@ -280,10 +240,9 @@
     (listex:alias (listex:get-alias expr))
     ;; expand the arguments
     ((or listex:command
-         listex:operator
-         listex:macro) (let ((args (mapcar #'listex:expand-lisp-macro
-                                           (cdr expr)))
-                             (name (car expr)))
+         listex:operator) (let ((args (mapcar #'listex:expand-lisp-macro
+                                              (cdr expr)))
+                                (name (car expr)))
          `(,name ,@args)))
     (list (mapcar #'listex:expand-lisp-macro expr))
     (otherwise expr)))
@@ -319,11 +278,31 @@
                         ,@body))
 
 (defmacro lt-macrolet* (bindings &rest body)
+  "This is useful in the case that you want to render
+   some text inside of a lt-macrolet expression."
   (let ((init `(progn ,@body)))
     (cl-loop for b in (reverse bindings)
            with result = init
            do (setq result `(lt-macrolet (,b) ,result))
            finally
            return result)))
+
+(defmacro lt-cmdlet (cmds &rest body)
+  `(lt-macrolet ,(cl-loop for cmd in cmds
+                          collect
+                          (let ((key (car cmd))
+                                (args (cadr cmd))
+                                (fmt (caddr cmd)))
+                            `(,key ,args
+                                   (listex:newcmd--format-function ,args
+                                                                   ,fmt))))
+     ,@body))
+
+;; set indentation for lt-macrolet and other let constructs correctly
+(progn
+  (put 'lt-aliaslet 'lisp-indent-function 'defun)
+  (put 'lt-macrolet 'lisp-indent-function 'defun)
+  (put 'lt-macrolet* 'lisp-indent-function 'defun)
+  (put 'lt-cmdlet 'lisp-indent-function 'defun))
 
 (provide 'listex)
