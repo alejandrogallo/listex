@@ -232,14 +232,15 @@ to make it easy to edit the s-expressions with your preferred bindings.
 
 ** Implementation
 #+begin_src emacs-lisp
-(defvar listex-lisp-macro-alist nil)
+(defvar listex-lisp-macro-alist nil
+  "Alist storing all listex macros that are defined.")
 
 (defmacro listex:lisp-macro-alist-pair (alist key args list-or-fun)
   `(list '(alist-get ',key ,alist)
-     ,(cl-etypecase list-or-fun
-        (function list-or-fun)
-        (list `(lambda ,args
-                 ,list-or-fun)))))
+         ,(cl-etypecase list-or-fun
+            (function list-or-fun)
+            (list `(cl-flet ((f ,args ,list-or-fun))
+                     (cl-function f))))))
 
 (defmacro listex:defmacro (key !args list-or-fun)
   `(let ((args (listex:lisp-macro-alist-pair listex-lisp-macro-alist
@@ -259,7 +260,6 @@ to make it easy to edit the s-expressions with your preferred bindings.
 
 (defmacro listex:newcmd (key args fmt)
   `(listex:defmacro ,key ,args (listex:newcmd--format-function ,args, fmt)))
-
 #+end_src
 
 ** TeX macro definitions
