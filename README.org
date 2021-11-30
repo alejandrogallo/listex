@@ -885,6 +885,87 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 \end{document}
 :end:
 
+** XML renderer
+
+Here is an example of how to extend what is implemented
+in order to render XML easily.
+
+#+begin_src emacs-lisp :tangle no
+
+(defun listex:render-xml (expr)
+  "Main function to convert a listex DSL s-expression
+   into a latex-compatible string."
+  (cl-etypecase expr
+    (listex:lisp-macro (let* ((args (cdr expr))
+                              (name (car expr))
+                              (f (listex:lisp-macro-get-fun name))
+                              (new-expr (apply f args)))
+                         (listex:render-xml new-expr)))
+    (listex:alias (let* ((replacement (listex:get-alias expr)))
+                    (listex:render-xml replacement)))
+    (listex:command
+     (let* ((name (string-remove-prefix
+                   listex-command-prefix
+                   (symbol-name (car expr))))
+            (args-strings (mapcar #'listex:render-xml (cdr expr))))
+       (format "%s=\"%s\"" name (string-join args-strings " "))))
+    (list (string-join (mapcar #'listex:render-xml expr) " "))
+    (atom (format "%s" expr))))
+
+
+(defmacro with-xml (&rest body)
+  `(cl-flet ((commandp (lambda (e) (typep e 'listex:command)))
+             (join-exprs (l) (string-join (mapcar #'listex:render-xml l) " ")))
+       (lt-macrolet ((> (name &rest content)
+                        (let ((commands (remove-if-not #'commandp content))
+                              (tag-content (remove-if #'commandp content)))
+                          (format "<%s %s>\n%s\n</%1$s>\n"
+                                  name
+                                  (join-exprs commands)
+                                  (join-exprs tag-content)))))
+         ,@body)))
+#+end_src
+
+and we can use it in a minimal example that still is neat.
+
+#+begin_src listex :tangle no :wrap src html
+(lt-macrolet ((π (&rest body) `(> p (-class md-3 flex) ,@body)))
+  (with-xml
+   '(> html
+       (> head
+          (> title
+             This is the inside of this title))
+       (> body
+          (> div (-class "content")
+             (π Here is a paragraph of my blog.
+                I am pretty happy about how my paragraph is coming along.)
+
+             And this is some content that I want to put
+             outside of my paragraph.)))))
+#+end_src
+
+#+RESULTS:
+#+begin_src html
+<html >
+<head >
+<title >
+This is the inside of this title
+</title>
+
+</head>
+ <body >
+<div class="content">
+<p class="md-3 flex">
+Here is a paragraph of my blog. I am pretty happy about how my paragraph is coming along.
+</p>
+ And this is some content that I want to put outside of my paragraph.
+</div>
+
+</body>
+
+</html>
+#+end_src
+
 * Tests                                                            :noexport:
 :PROPERTIES:
 :header-args:emacs-lisp+: :tangle t.el
