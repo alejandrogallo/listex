@@ -85,14 +85,15 @@
   '(and symbol
         (satisfies (lambda (expr) (listex:get-alias expr)))))
 
-(defvar listex-lisp-macro-alist nil)
+(defvar listex-lisp-macro-alist nil
+  "Alist storing all listex macros that are defined.")
 
 (defmacro listex:lisp-macro-alist-pair (alist key args list-or-fun)
   `(list '(alist-get ',key ,alist)
-     ,(cl-etypecase list-or-fun
-        (function list-or-fun)
-        (list `(lambda ,args
-                 ,list-or-fun)))))
+         ,(cl-etypecase list-or-fun
+            (function list-or-fun)
+            (list `(cl-flet ((f ,args ,list-or-fun))
+                     (cl-function f))))))
 
 (defmacro listex:defmacro (key !args list-or-fun)
   `(let ((args (listex:lisp-macro-alist-pair listex-lisp-macro-alist
@@ -180,8 +181,7 @@
                               (f (listex:lisp-macro-get-fun name))
                               (new-expr (apply f args)))
                          (listex:render-tex new-expr)))
-    (listex:alias (let* ((name expr)
-                         (replacement (listex:get-alias name)))
+    (listex:alias (let* ((replacement (listex:get-alias expr)))
                     (listex:render-tex replacement)))
     (listex:keyword (format "\\%s"
                             (string-remove-prefix listex-keyword-prefix
@@ -215,7 +215,7 @@
 (defun listex (expr)
   (listex:render-tex expr))
 
-(defun listex:expand-lisp-macro (expr)
+(cl-defun listex:expand-lisp-macro (expr &key recursive)
   "This function should expand all listex:lisp-macro
    s-expressions by the s-expression that they expand to,
    so that in some cases you can just get the whole.
@@ -231,23 +231,24 @@
      the same expression just with the elements replaced
      by their expansions.
    - Otherwise, it should replace just the bare expression."
-  (cl-typecase expr
-    (listex:lisp-macro (let* ((args (mapcar #'listex:expand-lisp-macro
-                                            (cdr expr)))
-                              (name (car expr))
-                              (f (listex:lisp-macro-get-fun name)))
-                         (apply f args)))
-    (listex:alias (listex:get-alias expr))
-    ;; expand the arguments
-    ((or listex:command
-         listex:operator) (let ((args (mapcar #'listex:expand-lisp-macro
-                                              (cdr expr)))
-                                (name (car expr)))
+  (cl-flet ((expander (e) (listex:expand-lisp-macro e :recursive recursive)))
+    (cl-typecase expr
+      (listex:lisp-macro (let* ((name (car expr))
+                                (args (mapcar #'expander (cdr expr)))
+                                (f (listex:lisp-macro-get-fun name))
+                                (new-expr (apply f args)))
+                           (if recursive (expander new-expr) new-expr)))
+      (listex:alias (let ((new-expr (listex:get-alias expr)))
+                      (if recursive (expander new-expr) new-expr)))
+      ;; expand the arguments
+      ((or listex:command listex:operator)
+       (let ((name (car expr))
+             (args (mapcar #'expander (cdr expr))))
          `(,name ,@args)))
-    (list (mapcar #'listex:expand-lisp-macro expr))
-    (otherwise expr)))
+      (list (mapcar #'expander expr))
+      (otherwise expr))))
 
-(defmacro listex:letconstruct (before-progn-fn
+(defmacro listex:letconstruct (recursive
                                pair-constructor
                                alist bindings
                                &rest body)
@@ -256,7 +257,7 @@
                                             ,alist
                                             ,@b)))))
     `(cl-letf (,@letf-args)
-       (,before-progn-fn (progn ,@body)))))
+       (listex:expand-lisp-macro (progn ,@body) :recursive ,recursive))))
 
 (defmacro listex:alias-alist-pair (alist key replacement)
   `(list '(alist-get ',key ,alist)
@@ -264,28 +265,32 @@
         ((or atom cons) `',replacement))))
 
 (defmacro lt-aliaslet (bindings &rest body)
-  `(listex:letconstruct listex:expand-lisp-macro
+  `(listex:letconstruct nil
+                        listex:alias-alist-pair
+                        listex-alias-alist
+                        ,bindings
+                        ,@body))
+
+(defmacro lt-aliaslet* (bindings &rest body)
+  `(listex:letconstruct t
                         listex:alias-alist-pair
                         listex-alias-alist
                         ,bindings
                         ,@body))
 
 (defmacro lt-macrolet (bindings &rest body)
-  `(listex:letconstruct listex:expand-lisp-macro
+  `(listex:letconstruct nil
                         listex:lisp-macro-alist-pair
                         listex-lisp-macro-alist
                         ,bindings
                         ,@body))
 
 (defmacro lt-macrolet* (bindings &rest body)
-  "This is useful in the case that you want to render
-   some text inside of a lt-macrolet expression."
-  (let ((init `(progn ,@body)))
-    (cl-loop for b in (reverse bindings)
-           with result = init
-           do (setq result `(lt-macrolet (,b) ,result))
-           finally
-           return result)))
+  `(listex:letconstruct t
+                        listex:lisp-macro-alist-pair
+                        listex-lisp-macro-alist
+                        ,bindings
+                        ,@body))
 
 (defmacro lt-cmdlet (cmds &rest body)
   `(lt-macrolet ,(cl-loop for cmd in cmds
@@ -301,10 +306,16 @@
 ;; set indentation for lt-macrolet and other let constructs correctly
 (progn
   (put 'lt-aliaslet 'lisp-indent-function 'defun)
+  (put 'lt-aliaslet* 'lisp-indent-function 'defun)
   (put 'lt-macrolet 'lisp-indent-function 'defun)
   (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'lt-cmdlet 'lisp-indent-function 'defun))
 
 (provide 'listex)
 
-'(= (-mathbf F) (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t)) (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t)) (-mathbf v)) (%\times m (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))
+'(= (-mathbf F)
+    (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t))
+    (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t))
+                (-mathbf v))
+       (%\times m
+                (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))

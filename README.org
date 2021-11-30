@@ -340,8 +340,7 @@ for ease of use for others.
                               (f (listex:lisp-macro-get-fun name))
                               (new-expr (apply f args)))
                          (listex:render-tex new-expr)))
-    (listex:alias (let* ((name expr)
-                         (replacement (listex:get-alias name)))
+    (listex:alias (let* ((replacement (listex:get-alias expr)))
                     (listex:render-tex replacement)))
     (listex:keyword (format "\\%s"
                             (string-remove-prefix listex-keyword-prefix
@@ -390,7 +389,7 @@ Thankfully this is not very difficult and is done
 in the =listex:expand-lisp-macro= function.
 
 #+begin_src emacs-lisp
-(defun listex:expand-lisp-macro (expr)
+(cl-defun listex:expand-lisp-macro (expr &key recursive)
   "This function should expand all listex:lisp-macro
    s-expressions by the s-expression that they expand to,
    so that in some cases you can just get the whole.
@@ -406,21 +405,22 @@ in the =listex:expand-lisp-macro= function.
      the same expression just with the elements replaced
      by their expansions.
    - Otherwise, it should replace just the bare expression."
-  (cl-typecase expr
-    (listex:lisp-macro (let* ((args (mapcar #'listex:expand-lisp-macro
-                                            (cdr expr)))
-                              (name (car expr))
-                              (f (listex:lisp-macro-get-fun name)))
-                         (apply f args)))
-    (listex:alias (listex:get-alias expr))
-    ;; expand the arguments
-    ((or listex:command
-         listex:operator) (let ((args (mapcar #'listex:expand-lisp-macro
-                                              (cdr expr)))
-                                (name (car expr)))
+  (cl-flet ((expander (e) (listex:expand-lisp-macro e :recursive recursive)))
+    (cl-typecase expr
+      (listex:lisp-macro (let* ((name (car expr))
+                                (args (mapcar #'expander (cdr expr)))
+                                (f (listex:lisp-macro-get-fun name))
+                                (new-expr (apply f args)))
+                           (if recursive (expander new-expr) new-expr)))
+      (listex:alias (let ((new-expr (listex:get-alias expr)))
+                      (if recursive (expander new-expr) new-expr)))
+      ;; expand the arguments
+      ((or listex:command listex:operator)
+       (let ((name (car expr))
+             (args (mapcar #'expander (cdr expr))))
          `(,name ,@args)))
-    (list (mapcar #'listex:expand-lisp-macro expr))
-    (otherwise expr)))
+      (list (mapcar #'expander expr))
+      (otherwise expr))))
 #+end_src
 
 The =lt-macrolet= will expand the macros defined in the
@@ -430,7 +430,7 @@ to define globally the macros and pollute the listex
 macro environment.
 
 #+begin_src emacs-lisp
-(defmacro listex:letconstruct (before-progn-fn
+(defmacro listex:letconstruct (recursive
                                pair-constructor
                                alist bindings
                                &rest body)
@@ -439,7 +439,7 @@ macro environment.
                                             ,alist
                                             ,@b)))))
     `(cl-letf (,@letf-args)
-       (,before-progn-fn (progn ,@body)))))
+       (listex:expand-lisp-macro (progn ,@body) :recursive ,recursive))))
 
 (defmacro listex:alias-alist-pair (alist key replacement)
   `(list '(alist-get ',key ,alist)
@@ -447,28 +447,32 @@ macro environment.
         ((or atom cons) `',replacement))))
 
 (defmacro lt-aliaslet (bindings &rest body)
-  `(listex:letconstruct listex:expand-lisp-macro
+  `(listex:letconstruct nil
+                        listex:alias-alist-pair
+                        listex-alias-alist
+                        ,bindings
+                        ,@body))
+
+(defmacro lt-aliaslet* (bindings &rest body)
+  `(listex:letconstruct t
                         listex:alias-alist-pair
                         listex-alias-alist
                         ,bindings
                         ,@body))
 
 (defmacro lt-macrolet (bindings &rest body)
-  `(listex:letconstruct listex:expand-lisp-macro
+  `(listex:letconstruct nil
                         listex:lisp-macro-alist-pair
                         listex-lisp-macro-alist
                         ,bindings
                         ,@body))
 
 (defmacro lt-macrolet* (bindings &rest body)
-  "This is useful in the case that you want to render
-   some text inside of a lt-macrolet expression."
-  (let ((init `(progn ,@body)))
-    (cl-loop for b in (reverse bindings)
-           with result = init
-           do (setq result `(lt-macrolet (,b) ,result))
-           finally
-           return result)))
+  `(listex:letconstruct t
+                        listex:lisp-macro-alist-pair
+                        listex-lisp-macro-alist
+                        ,bindings
+                        ,@body))
 
 (defmacro lt-cmdlet (cmds &rest body)
   `(lt-macrolet ,(cl-loop for cmd in cmds
@@ -484,6 +488,7 @@ macro environment.
 ;; set indentation for lt-macrolet and other let constructs correctly
 (progn
   (put 'lt-aliaslet 'lisp-indent-function 'defun)
+  (put 'lt-aliaslet* 'lisp-indent-function 'defun)
   (put 'lt-macrolet 'lisp-indent-function 'defun)
   (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'lt-cmdlet 'lisp-indent-function 'defun))
@@ -896,14 +901,15 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
                 nil "%s is not of type %s" expr ',type)))
 
 ;; keyword
-(assert-type listex:keyword /int /sum /alpha)
+(assert-type listex:keyword /int /sum /alpha // /%)
 (assert-type! listex:keyword int sum alpha)
 
 ;; command
 (assert-type listex:command
              (-math) (-mathrm d x))
 (assert-type! listex:command
-              (2) -mathrm ((-mathrm d) x))
+              ((-lala)) (2) -mathrm
+              ((-mathrm d) x))
 
 ;; operator
 (dolist (op listex-operator-list)
@@ -911,6 +917,10 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 (assert-type listex:operator
              (+) (-) (*)
              (%custom) (%) (%%))
+;; test listex-operator-list
+(let (listex-operator-list)
+  (assert-type listex:operator (%א) (%a))
+  (assert-type! listex:operator (+) (-) (*)))
 
 ;; lisp-macros
 (assert-type listex:lisp-macro
@@ -952,16 +962,56 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 ;; alias
 (assert-replacements lt-aliaslet listex:alias car
                      ((λ '/lambda)
-                      (β '/beta))
+                      (b '/beta)
+                      (γ 'b)
+                      (δ 'δ))
+  (λ . /lambda)
+  (γ . b)
+  (δ . δ)
   ((λ a) . (/lambda a))
-  ((λ (λ (λ (β)))) . (/lambda (/lambda (/lambda (/beta))))))
+  ((λ (λ (λ (b)))) . (/lambda (/lambda (/lambda (/beta)))))
+  ((-cmd γ) . (-cmd b)))
+
+(assert-replacements lt-aliaslet* listex:alias car
+                     ((λ '/lambda)
+                      (b '/beta)
+                      (γ 'b))
+  (λ . /lambda)
+  (γ . /beta)
+  ((λ a) . (/lambda a))
+  ((λ (λ (λ (γ)))) . (/lambda (/lambda (/lambda (/beta)))))
+  ((-cmd γ) . (-cmd /beta)))
 
 ;; lt-macrolet test
 (assert-replacements lt-macrolet listex:lisp-macro (lambda (x) (list (car x)))
                      ((λ () '(this and that))
+                      (ι (n) `(+ ,@(cl-loop for i from 1 to n collect i)))
+                      ;; keyword test
+                      (circle (&key (radius 1) (diameter (* radius 2)))
+                              `(-circle ,diameter))
+                      (time (count &key m) `(,count ,(if m 'minutes 'seconds)))
+                      ;; recursiveness test
+                      (AB (n) `(AB 5 6 ,n))
+                      (ABC (n) `(ABC (λ) 6 ,n)))
+  ((λ) . (this and that))
+  ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1)))
+  ;; keywords
+  ((circle :radius 1) . (-circle 2))
+  ((circle :diameter 1) . (-circle 1))
+  ((time 1) . (1 seconds))
+  ((time 1 :m t) . (1 minutes))
+  ;; check recursiveness
+  ((AB 1) . (AB 5 6 1))
+  ((ABC 1) . (ABC (λ) 6 1)))
+
+(assert-replacements lt-macrolet* listex:lisp-macro (lambda (x) (list (car x)))
+                     ((λ () '(this and that))
+                      (ABC (n) `(AB (λ) 6 ,n))
                       (ι (n) `(+ ,@(cl-loop for i from 1 to n collect i))))
   ((λ) . (this and that))
-  ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1))))
+  ((* (ι 3) (ι 2) (ι 1)) . (* (+ 1 2 3) (+ 1 2) (+ 1)))
+  ;; check recursiveness
+  ((ABC 1) . (AB (this and that) 6 1)))
 
 ;; lt-macrolet test
 (assert-replacements lt-cmdlet listex:lisp-macro (lambda (x) (list (car x)))
