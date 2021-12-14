@@ -312,10 +312,3 @@
   (put 'lt-cmdlet 'lisp-indent-function 'defun))
 
 (provide 'listex)
-
-'(= (-mathbf F)
-    (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t))
-    (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t))
-                (-mathbf v))
-       (%\times m
-                (-frac ((-mathrm d) (-mathbf v)) ((-mathrm d) t)))))

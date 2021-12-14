@@ -575,7 +575,7 @@ $$\mathbf{F} = \frac{\mathrm{d} \mathbf{p}}{\mathrm{d} t} = \frac{\mathrm{d} m}{
 
 This last expression expands to
 
-#+begin_src emacs-lisp :eval no :exports code
+#+begin_src emacs-lisp :eval no :exports code :tangle no
 '(= (-mathbf F)
     (-frac ((-mathrm d) (-mathbf p)) ((-mathrm d) t))
     (+ (%\times (-frac ((-mathrm d) m) ((-mathrm d) t))
