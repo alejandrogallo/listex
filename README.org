@@ -1,5 +1,6 @@
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle listex.el :results none
+:header-args:emacs-lisp: :results none
+:header-args:lisp: :results none
 :END:
 #+title: LisTeX
 #+author: Alejandro Gallo
@@ -86,11 +87,21 @@ This package has the following concepts:
 - Think about which rules to implement for the latex indentation.
 
 * Prolog                                                           :noexport:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb-ref elisp-prolog
 (require 'cl-lib)
 #+end_src
 
+#+begin_src lisp :noweb-ref lisp-prolog
+(defpackage :lpp
+  (:use :cl))
+(in-package :lpp)
+#+end_src
+
+
 * org-src blocks
+:PROPERTIES:
+:header-args:emacs-lisp+: :noweb-ref org-babel
+:END:
 
 In org mode we want to have easily accessible code blocks like
 
@@ -156,6 +167,9 @@ We have beyond the usual flags, the following:
 #+end_src
 
 * Derived mode
+:PROPERTIES:
+:header-args:emacs-lisp: :noweb-ref elisp-mode
+:END:
 
 We define a derived mode based on the =emacs-lisp= mode
 to make it easy to edit the s-expressions with your preferred bindings.
@@ -167,16 +181,24 @@ to make it easy to edit the s-expressions with your preferred bindings.
 \\{listex-mode-map}")
 #+end_src
 
-* Misc
+* Main configurable varialbes
+:PROPERTIES:
+:header-args:emacs-lisp+: :noweb-ref elisp-variables
+:END:
+
+This section presents variables that can be overriden by users.
+
 #+begin_src emacs-lisp
 (defvar listex-keyword-prefix "/")
 (defvar listex-command-prefix "-")
 
 (defvar listex-operator-prefix "%")
 (defvar listex-operator-list '(+ * - =))
+#+end_src
 
-(defun listex:indentation (len)
-  (eval `(concat ,@(cl-loop for i from 1 to len collect " "))))
+#+begin_src lisp
+(defvar *preserve-case* t
+  "Preserve case of the symbols read.")
 #+end_src
 
 * Types
@@ -496,9 +518,32 @@ macro environment.
 
 
 * Epilog                                                           :noexport:
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb-ref elisp-epilog
 (provide 'listex)
 #+end_src
+* Results
+** Lisp
+
+#+headers: :tangle lpp :noweb yes :shebang "#!/usr/bin/env clisp"
+#+begin_src lisp
+;; vim:ft=lisp
+<<lisp-prolog>>
+#+end_src
+
+** TODO Emacs lisp
+
+#+headers: :tangle listex.el :noweb yes
+#+begin_src emacs-lisp
+<<elisp-prolog>>
+
+<<org-babel>>
+
+<<elisp-mode>>
+
+<<elisp-epilog>>
+#+end_src
+
+
 * Examples
 :PROPERTIES:
 :header-args:listex: :exports both
