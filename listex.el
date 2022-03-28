@@ -311,4 +311,14 @@
   (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'lt-cmdlet 'lisp-indent-function 'defun))
 
+(defun listex:render-last-sexpr ()
+  (interactive)
+  (let ((sexp (thing-at-point 'sexp)))
+    (message (listex:render-tex (eval (read sexp))))))
+
+(defun listex:render-defun ()
+  (interactive)
+  (let ((sexp (thing-at-point 'defun)))
+    (message (listex:render-tex (eval (read sexp))))))
+
 (provide 'listex)

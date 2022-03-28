@@ -495,6 +495,35 @@ macro environment.
 #+end_src
 
 
+* Tools
+** Preview listex
+A tool for previewing the latex created might be very useful
+when working in src-blocks
+
+#+begin_src emacs-lisp
+(defun listex:render-last-sexpr ()
+  (interactive)
+  (let ((sexp (thing-at-point 'sexp)))
+    (message (listex:render-tex (eval (read sexp))))))
+
+(defun listex:render-defun ()
+  (interactive)
+  (let ((sexp (thing-at-point 'defun)))
+    (message (listex:render-tex (eval (read sexp))))))
+#+end_src
+
+you can use these by doing
+
+#+begin_src emacs-lisp :tangle no
+(use-package listex
+    :config
+    (evil-define-key '(insert normal) listex-mode-map
+      (kbd "C-c C-c") #'listex:render-defun
+      (kbd "C-c C-e") #'listex:render-last-sexpr))
+#+end_src
+
+if you are using =evil= mode for instance.
+
 * Epilog                                                           :noexport:
 #+begin_src emacs-lisp
 (provide 'listex)
