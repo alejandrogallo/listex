@@ -1,5 +1,5 @@
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle listex.el :results none
+:header-args:emacs-lisp: :tangle listex.el :results none :comments link
 :END:
 #+title: LisTeX
 #+author: Alejandro Gallo
@@ -66,7 +66,7 @@ This package has the following concepts:
 |                       | =%=    |                   |               |                                     | =(%\\times A B)= | =A \times B=       | by prefix                       |
 | lisp-macro            |        | =listex:defmacro= | =lt-macrolet= | Function returning a symbol or list |                  |                    | is in =listex-lisp-macro-alist= |
 | tex-macro             |        | =listex:newcmd=   | =lt-cmdlet=   | Function returning a string         | =(^ a b)=        | =a^{b}=            | special case of =lisp-macro=    |
-| alias                 |        |                   | =lt-aliaslet= | Simple symbol replacement           | =λ=              | =\lambda=          | is in =listex-alias-alist=      |
+| alias                 |        | =listex:defalias= | =lt-aliaslet= | Simple symbol replacement           | =λ=              | =\lambda=          | is in =listex-alias-alist=      |
 |-----------------------+--------+-------------------+---------------+-------------------------------------+------------------+--------------------+---------------------------------|
 | atom                  |        |                   |               | Convert whatever to string          | =int=            | =int=              |                                 |
 |                       |        |                   |               |                                     | =[a=5, b]=       | =[a=5, b]=         |                                 |
@@ -266,6 +266,14 @@ to make it easy to edit the s-expressions with your preferred bindings.
 (defmacro listex:newcmd (key args fmt)
   `(listex:defmacro ,key ,args (listex:newcmd--format-function ,args, fmt)))
 #+end_src
+
+and for the aliases we define =defalias=
+
+#+begin_src emacs-lisp
+(defmacro listex:defalias (alias key)
+  `(cl-pushnew (cons ',alias ',key) listex-alias-alist :test #'cl-equalp))
+#+end_src
+
 
 ** TeX macro definitions
 

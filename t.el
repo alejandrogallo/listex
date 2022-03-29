@@ -1,3 +1,4 @@
+;; [[file:README.org::*Tests][Tests:1]]
 (defmacro assert-type (type &rest elements)
   `(dolist (expr ',elements)
      (cl-assert (cl-typep expr ',type)
@@ -173,3 +174,4 @@
                              (-mathbf ,a))))
   '(λ (+ (Σ (ω) (ω))
          (lrp (ω)))))
+;; Tests:1 ends here

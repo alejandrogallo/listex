@@ -1,5 +1,8 @@
+;; [[file:README.org::*Prolog][Prolog:1]]
 (require 'cl-lib)
+;; Prolog:1 ends here
 
+;; [[file:README.org::*org-src blocks][org-src blocks:2]]
 (defvar org-babel-default-header-args:listex '((:exports . "results")
                                                (:results . "value drawer")
                                                (:eval . "t")))
@@ -30,12 +33,16 @@
                        `((-label ,label) ,expr)
                      expr))
          expr)))))
+;; org-src blocks:2 ends here
 
+;; [[file:README.org::*Derived mode][Derived mode:1]]
 (define-derived-mode listex-mode
   emacs-lisp-mode "LiSTeX"
   "Major mode for listex.
 \\{listex-mode-map}")
+;; Derived mode:1 ends here
 
+;; [[file:README.org::*Misc][Misc:1]]
 (defvar listex-keyword-prefix "/")
 (defvar listex-command-prefix "-")
 
@@ -44,7 +51,9 @@
 
 (defun listex:indentation (len)
   (eval `(concat ,@(cl-loop for i from 1 to len collect " "))))
+;; Misc:1 ends here
 
+;; [[file:README.org::*Types][Types:1]]
 (cl-deftype listex:keyword ()
   '(and symbol
         (satisfies (lambda (k)
@@ -89,7 +98,9 @@
 (cl-deftype listex:alias ()
   '(and symbol
         (satisfies (lambda (expr) (listex:get-alias expr)))))
+;; Types:1 ends here
 
+;; [[file:README.org::*Implementation][Implementation:1]]
 (defvar listex-lisp-macro-alist nil
   "Alist storing all listex macros that are defined.")
 
@@ -118,7 +129,14 @@
 
 (defmacro listex:newcmd (key args fmt)
   `(listex:defmacro ,key ,args (listex:newcmd--format-function ,args, fmt)))
+;; Implementation:1 ends here
 
+;; [[file:README.org::*Implementation][Implementation:2]]
+(defmacro listex:defalias (alias key)
+  `(cl-pushnew (cons ',alias ',key) listex-alias-alist :test #'cl-equalp))
+;; Implementation:2 ends here
+
+;; [[file:README.org::*TeX macro definitions][TeX macro definitions:1]]
 ;; important macros
 (listex:newcmd braced (&rest body) "{%s}")
 (listex:newcmd progn (&rest body) "%s")
@@ -176,7 +194,9 @@
                                     and do (setf buff nil)
                                     else
                                     do (push '& buff)))))
+;; TeX macro definitions:1 ends here
 
+;; [[file:README.org::*Implementation][Implementation:1]]
 (defun listex:render-tex (expr)
   "Main function to convert a listex DSL s-expression
    into a latex-compatible string."
@@ -219,7 +239,9 @@
 
 (defun listex (expr)
   (listex:render-tex expr))
+;; Implementation:1 ends here
 
+;; [[file:README.org::*Macrolet][Macrolet:1]]
 (cl-defun listex:expand-lisp-macro (expr &key recursive)
   "This function should expand all listex:lisp-macro
    s-expressions by the s-expression that they expand to,
@@ -252,7 +274,9 @@
          `(,name ,@args)))
       (list (mapcar #'expander expr))
       (otherwise expr))))
+;; Macrolet:1 ends here
 
+;; [[file:README.org::*Macrolet][Macrolet:2]]
 (defmacro listex:letconstruct (recursive
                                pair-constructor
                                alist bindings
@@ -315,15 +339,24 @@
   (put 'lt-macrolet 'lisp-indent-function 'defun)
   (put 'lt-macrolet* 'lisp-indent-function 'defun)
   (put 'lt-cmdlet 'lisp-indent-function 'defun))
+;; Macrolet:2 ends here
 
-(defun listex:render-last-sexpr ()
-  (interactive)
+;; [[file:README.org::*Preview listex][Preview listex:1]]
+(defun listex:render-last-sexpr (&optional not-eval?)
+  (interactive "P")
   (let ((sexp (thing-at-point 'sexp)))
-    (message (listex:render-tex (eval (read sexp))))))
+    (message (listex:render-tex (if not-eval?
+                                    (read sexp)
+                                    (eval (read sexp)))))))
 
-(defun listex:render-defun ()
-  (interactive)
+(defun listex:render-defun (&optional not-eval?)
+  (interactive "P")
   (let ((sexp (thing-at-point 'defun)))
-    (message (listex:render-tex (eval (read sexp))))))
+    (message (listex:render-tex (if not-eval?
+                                    (read sexp)
+                                    (eval (read sexp)))))))
+;; Preview listex:1 ends here
 
+;; [[file:README.org::*Epilog][Epilog:1]]
 (provide 'listex)
+;; Epilog:1 ends here

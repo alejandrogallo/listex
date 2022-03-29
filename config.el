@@ -1,3 +1,4 @@
+;; [[file:README.org::*Emacs configuration][Emacs configuration:1]]
 (require 'package)
 
 (setq package-enable-at-startup t)
@@ -34,3 +35,4 @@
 (use-package htmlize
   :defer t
   :ensure t)
+;; Emacs configuration:1 ends here
