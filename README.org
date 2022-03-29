@@ -48,12 +48,12 @@ This package has the following concepts:
   For instance,
   - ='(/frac /alpha 2)= ⇒ =\frac \alpha 2=
   - ='(-frac /alpha 2)= ⇒ =\frac{\alpha}{2}=
-- [[operator][operator]] :: TODO
-- lisp-macro :: TODO
-- tex-macro :: TODO
-- alias :: TODO
-- atom :: TODO
-- list :: TODO
+- [[operator][operator]] :: TODOCUMENT
+- lisp-macro :: TODOCUMENT
+- tex-macro :: TODOCUMENT
+- alias :: TODOCUMENT
+- atom :: TODOCUMENT
+- list :: TODOCUMENT
   
 
 
