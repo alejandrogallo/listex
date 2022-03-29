@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-03-29 Tue 20:34 -->
+<!-- 2022-03-29 Tue 21:01 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>LisTeX</title>
@@ -222,54 +222,54 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgdfe38e9">1. Introduction</a>
+<li><a href="#org5d51527">1. Introduction</a>
 <ul>
-<li><a href="#org4d76564">1.1. <span class="todo TODO">TODO</span> Philosophy</a></li>
-<li><a href="#org9460e26">1.2. What is to be done</a></li>
+<li><a href="#orgffcade7">1.1. <span class="todo TODO">TODO</span> Philosophy</a></li>
+<li><a href="#orgfdaabf5">1.2. What is to be done</a></li>
 </ul>
 </li>
-<li><a href="#org27fc383">2. org-src blocks</a></li>
-<li><a href="#orgb938d3f">3. Derived mode</a></li>
-<li><a href="#orgcee162a">4. Misc</a></li>
-<li><a href="#orgb6f8de1">5. Types</a></li>
-<li><a href="#org89682e8">6. Macros definition</a>
+<li><a href="#orgea96ff6">2. org-src blocks</a></li>
+<li><a href="#org2955e67">3. Derived mode</a></li>
+<li><a href="#orgf324f39">4. Misc</a></li>
+<li><a href="#orga43d995">5. Types</a></li>
+<li><a href="#org2ff8b43">6. Macros definition</a>
 <ul>
-<li><a href="#org5f51638">6.1. Implementation</a></li>
-<li><a href="#org827d1ce">6.2. TeX macro definitions</a></li>
+<li><a href="#org7803ddd">6.1. Implementation</a></li>
+<li><a href="#orgb3eb5ed">6.2. TeX macro definitions</a></li>
 </ul>
 </li>
-<li><a href="#orgb3105ba">7. Render</a>
+<li><a href="#org1679de0">7. Render</a>
 <ul>
-<li><a href="#orgef614df">7.1. Implementation</a></li>
+<li><a href="#org47f089e">7.1. Implementation</a></li>
 </ul>
 </li>
-<li><a href="#org4bfecd3">8. Macrolet</a></li>
-<li><a href="#orge5b5720">9. Tools</a>
+<li><a href="#org8b73ea6">8. Macrolet</a></li>
+<li><a href="#org5c55065">9. Tools</a>
 <ul>
-<li><a href="#org20d50fb">9.1. Preview listex</a></li>
+<li><a href="#orga404218">9.1. Preview listex</a></li>
 </ul>
 </li>
-<li><a href="#org873517a">10. Examples</a>
+<li><a href="#orgbacd60e">10. Examples</a>
 <ul>
-<li><a href="#org8a09e21">10.1. Some equations</a>
+<li><a href="#orgbcab1d7">10.1. Some equations</a>
 <ul>
-<li><a href="#orgff6e7bf">10.1.1. Newton</a></li>
-<li><a href="#org2dd5e78">10.1.2. Coupled cluster</a></li>
+<li><a href="#org56c64bb">10.1.1. Newton</a></li>
+<li><a href="#org439912f">10.1.2. Coupled cluster</a></li>
 </ul>
 </li>
-<li><a href="#org41f9b9b">10.2. Latex document example</a></li>
-<li><a href="#org6a734ce">10.3. A matrix macro</a></li>
-<li><a href="#org6e43ded">10.4. Cmdlet</a></li>
-<li><a href="#org7e040a2">10.5. Schwarzschild's paper</a></li>
-<li><a href="#org8a7a1da">10.6. XML renderer</a></li>
+<li><a href="#org41a938b">10.2. Latex document example</a></li>
+<li><a href="#orgd0f3722">10.3. A matrix macro</a></li>
+<li><a href="#orgd9d5533">10.4. Cmdlet</a></li>
+<li><a href="#orgdc22e3b">10.5. Schwarzschild's paper</a></li>
+<li><a href="#org155142e">10.6. XML renderer</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgdfe38e9" class="outline-2">
-<h2 id="orgdfe38e9"><span class="section-number-2">1.</span> Introduction</h2>
+<div id="outline-container-org5d51527" class="outline-2">
+<h2 id="org5d51527"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This packages comes from the ocasional frustration of writing
@@ -289,8 +289,8 @@ You can see a rendered version of this document <a href="https://alejandrogallo.
 </p>
 </div>
 
-<div id="outline-container-org4d76564" class="outline-3">
-<h3 id="org4d76564"><span class="section-number-3">1.1.</span> <span class="todo TODO">TODO</span> Philosophy</h3>
+<div id="outline-container-orgffcade7" class="outline-3">
+<h3 id="orgffcade7"><span class="section-number-3">1.1.</span> <span class="todo TODO">TODO</span> Philosophy</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 This package should be as simple as possible while
@@ -306,7 +306,7 @@ through the <code>listex</code> function.
 <p>
 This means, only a list is given and every component of the list
 can be different kind of types recognized by the
-<a href="#orgb6f8de1">5</a> section.
+<a href="#orga43d995">5</a> section.
 </p>
 
 <p>
@@ -314,7 +314,7 @@ This package has the following concepts:
 </p>
 
 <dl class="org-dl">
-<dt><a href="#orge2c657f">command</a></dt><dd>This should be the equivalent to latex commands, i.e.,
+<dt><a href="#orga2da839">command</a></dt><dd>This should be the equivalent to latex commands, i.e.,
 a latex symbol and some braces expressions denoting arguments,
 for instance <code>\frac{A}{B}</code> rather than <code>\frac A B</code>.
 In our DSL, this is denoted by a <code>-</code> prefix, i.e. this frac would be
@@ -322,7 +322,7 @@ In our DSL, this is denoted by a <code>-</code> prefix, i.e. this frac would be
 latex information for the <code>frac</code> command, i.e.
 <code>'(-frac A B C D)</code> is allowed and gets rendered as
 <code>\frac{A}{B}{C}{D}</code>.</dd>
-<dt><a href="#org67c39bd">keyword</a></dt><dd>This is the counterpart to <a href="#orge2c657f">command</a>, i.e. just latex keywords.
+<dt><a href="#orgcef850f">keyword</a></dt><dd>This is the counterpart to <a href="#orga2da839">command</a>, i.e. just latex keywords.
 This can be at the beginning of the list of in the middle,
 and gets introduced by the prefix <code>/</code>.
 For instance,
@@ -330,7 +330,7 @@ For instance,
 <li><code>'(/frac /alpha 2)</code> ⇒ <code>\frac \alpha 2</code></li>
 <li><code>'(-frac /alpha 2)</code> ⇒ <code>\frac{\alpha}{2}</code></li>
 </ul></dd>
-<dt><a href="#org244c0c0">operator</a></dt><dd>TODOCUMENT</dd>
+<dt><a href="#org0ef70b6">operator</a></dt><dd>TODOCUMENT</dd>
 <dt>lisp-macro</dt><dd>TODOCUMENT</dd>
 <dt>tex-macro</dt><dd>TODOCUMENT</dd>
 <dt>alias</dt><dd>TODOCUMENT</dd>
@@ -374,7 +374,7 @@ For instance,
 </thead>
 <tbody>
 <tr>
-<td class="org-left">command <a id="orge2c657f"></a></td>
+<td class="org-left">command <a id="orga2da839"></a></td>
 <td class="org-left"><code>-</code></td>
 <td class="org-left">&#xa0;</td>
 <td class="org-left">&#xa0;</td>
@@ -385,7 +385,7 @@ For instance,
 </tr>
 
 <tr>
-<td class="org-left">keyword <a id="org67c39bd"></a></td>
+<td class="org-left">keyword <a id="orgcef850f"></a></td>
 <td class="org-left"><code>/</code></td>
 <td class="org-left">&#xa0;</td>
 <td class="org-left">&#xa0;</td>
@@ -396,7 +396,7 @@ For instance,
 </tr>
 
 <tr>
-<td class="org-left">operator <a id="org244c0c0"></a></td>
+<td class="org-left">operator <a id="org0ef70b6"></a></td>
 <td class="org-left">&#xa0;</td>
 <td class="org-left">&#xa0;</td>
 <td class="org-left">&#xa0;</td>
@@ -502,8 +502,8 @@ For instance,
 
 
 
-<div id="outline-container-org9460e26" class="outline-3">
-<h3 id="org9460e26"><span class="section-number-3">1.2.</span> What is to be done</h3>
+<div id="outline-container-orgfdaabf5" class="outline-3">
+<h3 id="orgfdaabf5"><span class="section-number-3">1.2.</span> What is to be done</h3>
 <div class="outline-text-3" id="text-1-2">
 <ul class="org-ul">
 <li>Some real world testing
@@ -518,8 +518,8 @@ ergonomic, but it might be wrong.</li>
 </div>
 </div>
 
-<div id="outline-container-org27fc383" class="outline-2">
-<h2 id="org27fc383"><span class="section-number-2">2.</span> org-src blocks</h2>
+<div id="outline-container-orgea96ff6" class="outline-2">
+<h2 id="orgea96ff6"><span class="section-number-2">2.</span> org-src blocks</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 In org mode we want to have easily accessible code blocks like
@@ -599,8 +599,8 @@ etc.</dd>
 </div>
 </div>
 
-<div id="outline-container-orgb938d3f" class="outline-2">
-<h2 id="orgb938d3f"><span class="section-number-2">3.</span> Derived mode</h2>
+<div id="outline-container-org2955e67" class="outline-2">
+<h2 id="org2955e67"><span class="section-number-2">3.</span> Derived mode</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 We define a derived mode based on the <code>emacs-lisp</code> mode
@@ -617,8 +617,8 @@ to make it easy to edit the s-expressions with your preferred bindings.
 </div>
 </div>
 
-<div id="outline-container-orgcee162a" class="outline-2">
-<h2 id="orgcee162a"><span class="section-number-2">4.</span> Misc</h2>
+<div id="outline-container-orgf324f39" class="outline-2">
+<h2 id="orgf324f39"><span class="section-number-2">4.</span> Misc</h2>
 <div class="outline-text-2" id="text-4">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-keyword-prefix</span> <span style="font-style: italic;">"/"</span>)
@@ -634,8 +634,8 @@ to make it easy to edit the s-expressions with your preferred bindings.
 </div>
 </div>
 
-<div id="outline-container-orgb6f8de1" class="outline-2">
-<h2 id="orgb6f8de1"><span class="section-number-2">5.</span> Types</h2>
+<div id="outline-container-orga43d995" class="outline-2">
+<h2 id="orga43d995"><span class="section-number-2">5.</span> Types</h2>
 <div class="outline-text-2" id="text-5">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">cl-deftype</span> <span style="font-weight: bold; text-decoration: underline;">listex:keyword</span> ()
@@ -687,12 +687,12 @@ to make it easy to edit the s-expressions with your preferred bindings.
 </div>
 </div>
 
-<div id="outline-container-org89682e8" class="outline-2">
-<h2 id="org89682e8"><span class="section-number-2">6.</span> Macros definition</h2>
+<div id="outline-container-org2ff8b43" class="outline-2">
+<h2 id="org2ff8b43"><span class="section-number-2">6.</span> Macros definition</h2>
 <div class="outline-text-2" id="text-6">
 </div>
-<div id="outline-container-org5f51638" class="outline-3">
-<h3 id="org5f51638"><span class="section-number-3">6.1.</span> Implementation</h3>
+<div id="outline-container-org7803ddd" class="outline-3">
+<h3 id="org7803ddd"><span class="section-number-3">6.1.</span> Implementation</h3>
 <div class="outline-text-3" id="text-6-1">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defvar</span> <span style="font-weight: bold; font-style: italic;">listex-lisp-macro-alist</span> nil
@@ -732,15 +732,15 @@ and for the aliases we define <code>defalias</code>
 
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">(<span style="font-weight: bold;">defmacro</span> <span style="font-weight: bold;">listex:defalias</span> (alias key)
-  `(<span style="font-weight: bold;">cl-pushnew</span> (cons ',alias ',key) listex-alias-alist <span style="font-weight: bold;">:test</span> #'cl-equalp))
+  `(<span style="font-weight: bold;">setf</span> (alist-get ',alias listex-alias-alist) ',key))
 </pre>
 </div>
 </div>
 </div>
 
 
-<div id="outline-container-org827d1ce" class="outline-3">
-<h3 id="org827d1ce"><span class="section-number-3">6.2.</span> TeX macro definitions</h3>
+<div id="outline-container-orgb3eb5ed" class="outline-3">
+<h3 id="orgb3eb5ed"><span class="section-number-3">6.2.</span> TeX macro definitions</h3>
 <div class="outline-text-3" id="text-6-2">
 <p>
 This package defines some macros by default for use in the src code and
@@ -811,12 +811,12 @@ for ease of use for others.
 </div>
 </div>
 
-<div id="outline-container-orgb3105ba" class="outline-2">
-<h2 id="orgb3105ba"><span class="section-number-2">7.</span> Render</h2>
+<div id="outline-container-org1679de0" class="outline-2">
+<h2 id="org1679de0"><span class="section-number-2">7.</span> Render</h2>
 <div class="outline-text-2" id="text-7">
 </div>
-<div id="outline-container-orgef614df" class="outline-3">
-<h3 id="orgef614df"><span class="section-number-3">7.1.</span> Implementation</h3>
+<div id="outline-container-org47f089e" class="outline-3">
+<h3 id="org47f089e"><span class="section-number-3">7.1.</span> Implementation</h3>
 <div class="outline-text-3" id="text-7-1">
 <div class="org-src-container">
 <pre class="src src-emacs-lisp">
@@ -868,8 +868,8 @@ for ease of use for others.
 </div>
 </div>
 
-<div id="outline-container-org4bfecd3" class="outline-2">
-<h2 id="org4bfecd3"><span class="section-number-2">8.</span> Macrolet</h2>
+<div id="outline-container-org8b73ea6" class="outline-2">
+<h2 id="org8b73ea6"><span class="section-number-2">8.</span> Macrolet</h2>
 <div class="outline-text-2" id="text-8">
 <p>
 In order to have a macrolet-like behaviour we need
@@ -999,12 +999,12 @@ macro environment.
 </div>
 
 
-<div id="outline-container-orge5b5720" class="outline-2">
-<h2 id="orge5b5720"><span class="section-number-2">9.</span> Tools</h2>
+<div id="outline-container-org5c55065" class="outline-2">
+<h2 id="org5c55065"><span class="section-number-2">9.</span> Tools</h2>
 <div class="outline-text-2" id="text-9">
 </div>
-<div id="outline-container-org20d50fb" class="outline-3">
-<h3 id="org20d50fb"><span class="section-number-3">9.1.</span> Preview listex</h3>
+<div id="outline-container-orga404218" class="outline-3">
+<h3 id="orga404218"><span class="section-number-3">9.1.</span> Preview listex</h3>
 <div class="outline-text-3" id="text-9-1">
 <p>
 A tool for previewing the latex created might be very useful
@@ -1048,17 +1048,17 @@ if you are using <code>evil</code> mode for instance.
 </div>
 </div>
 
-<div id="outline-container-org873517a" class="outline-2">
-<h2 id="org873517a"><span class="section-number-2">10.</span> Examples</h2>
+<div id="outline-container-orgbacd60e" class="outline-2">
+<h2 id="orgbacd60e"><span class="section-number-2">10.</span> Examples</h2>
 <div class="outline-text-2" id="text-10">
 </div>
 
-<div id="outline-container-org8a09e21" class="outline-3">
-<h3 id="org8a09e21"><span class="section-number-3">10.1.</span> Some equations</h3>
+<div id="outline-container-orgbcab1d7" class="outline-3">
+<h3 id="orgbcab1d7"><span class="section-number-3">10.1.</span> Some equations</h3>
 <div class="outline-text-3" id="text-10-1">
 </div>
-<div id="outline-container-orgff6e7bf" class="outline-4">
-<h4 id="orgff6e7bf"><span class="section-number-4">10.1.1.</span> Newton</h4>
+<div id="outline-container-org56c64bb" class="outline-4">
+<h4 id="org56c64bb"><span class="section-number-4">10.1.1.</span> Newton</h4>
 <div class="outline-text-4" id="text-10-1-1">
 <p>
 A simple equation will be
@@ -1145,8 +1145,8 @@ This last expression expands to
 </div>
 </div>
 
-<div id="outline-container-org2dd5e78" class="outline-4">
-<h4 id="org2dd5e78"><span class="section-number-4">10.1.2.</span> Coupled cluster</h4>
+<div id="outline-container-org439912f" class="outline-4">
+<h4 id="org439912f"><span class="section-number-4">10.1.2.</span> Coupled cluster</h4>
 <div class="outline-text-4" id="text-10-1-2">
 <p>
 This example writes the cluster operator in coupled cluster theory
@@ -1232,8 +1232,8 @@ and we can try the same this time using
 
 
 
-<div id="outline-container-org41f9b9b" class="outline-3">
-<h3 id="org41f9b9b"><span class="section-number-3">10.2.</span> Latex document example</h3>
+<div id="outline-container-org41a938b" class="outline-3">
+<h3 id="org41a938b"><span class="section-number-3">10.2.</span> Latex document example</h3>
 <div class="outline-text-3" id="text-10-2">
 <p>
 Even though <code>listex</code> is really thought for typesetting of formulas,
@@ -1271,8 +1271,8 @@ whole latex documents using s-expressions.
 </div>
 </div>
 
-<div id="outline-container-org6a734ce" class="outline-3">
-<h3 id="org6a734ce"><span class="section-number-3">10.3.</span> A matrix macro</h3>
+<div id="outline-container-orgd0f3722" class="outline-3">
+<h3 id="orgd0f3722"><span class="section-number-3">10.3.</span> A matrix macro</h3>
 <div class="outline-text-3" id="text-10-3">
 <p>
 This is a simple but useful macro defined in the macro section:
@@ -1333,8 +1333,8 @@ That's not bad at all.
 </div>
 
 
-<div id="outline-container-org6e43ded" class="outline-3">
-<h3 id="org6e43ded"><span class="section-number-3">10.4.</span> Cmdlet</h3>
+<div id="outline-container-orgd9d5533" class="outline-3">
+<h3 id="orgd9d5533"><span class="section-number-3">10.4.</span> Cmdlet</h3>
 <div class="outline-text-3" id="text-10-4">
 <p>
 There should be an easy way of defining lexically macros,
@@ -1360,8 +1360,8 @@ to have to call <code>listex</code> before the command.
 </div>
 </div>
 
-<div id="outline-container-org7e040a2" class="outline-3">
-<h3 id="org7e040a2"><span class="section-number-3">10.5.</span> Schwarzschild's paper</h3>
+<div id="outline-container-orgdc22e3b" class="outline-3">
+<h3 id="orgdc22e3b"><span class="section-number-3">10.5.</span> Schwarzschild's paper</h3>
 <div class="outline-text-3" id="text-10-5">
 <p>
 This is a partial implementation of
@@ -1446,8 +1446,8 @@ Variation ergibt die Bewegungsgleichungen des Punktes \\ To be continued...
 </div>
 </div>
 
-<div id="outline-container-org8a7a1da" class="outline-3">
-<h3 id="org8a7a1da"><span class="section-number-3">10.6.</span> XML renderer</h3>
+<div id="outline-container-org155142e" class="outline-3">
+<h3 id="org155142e"><span class="section-number-3">10.6.</span> XML renderer</h3>
 <div class="outline-text-3" id="text-10-6">
 <p>
 Here is an example of how to extend what is implemented
@@ -1539,7 +1539,7 @@ Here is a paragraph of my blog. I am pretty happy about how my paragraph is comi
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Alejandro Gallo</p>
-<p class="date">Created: 2022-03-29 Tue 20:34</p>
+<p class="date">Created: 2022-03-29 Tue 21:01</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
