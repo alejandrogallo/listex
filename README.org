@@ -271,7 +271,7 @@ and for the aliases we define =defalias=
 
 #+begin_src emacs-lisp
 (defmacro listex:defalias (alias key)
-  `(cl-pushnew (cons ',alias ',key) listex-alias-alist :test #'cl-equalp))
+  `(setf (alist-get ',alias listex-alias-alist) ',key))
 #+end_src
 
 

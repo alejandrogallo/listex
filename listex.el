@@ -133,7 +133,7 @@
 
 ;; [[file:README.org::*Implementation][Implementation:2]]
 (defmacro listex:defalias (alias key)
-  `(cl-pushnew (cons ',alias ',key) listex-alias-alist :test #'cl-equalp))
+  `(setf (alist-get ',alias listex-alias-alist) ',key))
 ;; Implementation:2 ends here
 
 ;; [[file:README.org::*TeX macro definitions][TeX macro definitions:1]]
