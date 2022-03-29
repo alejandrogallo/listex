@@ -506,15 +506,19 @@ A tool for previewing the latex created might be very useful
 when working in src-blocks
 
 #+begin_src emacs-lisp
-(defun listex:render-last-sexpr ()
-  (interactive)
+(defun listex:render-last-sexpr (&optional not-eval?)
+  (interactive "P")
   (let ((sexp (thing-at-point 'sexp)))
-    (message (listex:render-tex (eval (read sexp))))))
+    (message (listex:render-tex (if not-eval?
+                                    (read sexp)
+                                    (eval (read sexp)))))))
 
-(defun listex:render-defun ()
-  (interactive)
+(defun listex:render-defun (&optional not-eval?)
+  (interactive "P")
   (let ((sexp (thing-at-point 'defun)))
-    (message (listex:render-tex (eval (read sexp))))))
+    (message (listex:render-tex (if not-eval?
+                                    (read sexp)
+                                    (eval (read sexp)))))))
 #+end_src
 
 you can use these by doing
